@@ -1,3 +1,27 @@
+notes
+-----
+full stack with amplify and lambda as proxy for server
+------------------------------------------------------
+1. create react app as normal
+2. amplify init
+3. npm install aws-amplify @aws-amplify/ui-react
+4. amplify init
+5. amplify add api -> choose rest api with lambda, path is complaints/{id}
+        * make sure it's public for the client
+6. go to the folder of the lambda function -> npm install pg
+7. amplify push
+8. edit api gateway : add two methods under complaints/ for get and post, then three under complaints/{id} for get, patch and delete.
+        * make sure lambda integration is checked for each method, add lambda function name from init and save. then deploy
+        * might be useful to enable cors on all methods
+9. edit the lambda function : import pg, add hostname, password and eveything
+        * amplify bootstraps the lambda with its own role. make sure to add AmazonRDSFullAccess to the exection role AWSLambdaVPCAccessExecutionRole
+        * add the same vpc of the rds instance to the vpc. make sure that custom tcp 5432 is shown in inbound and outbound rules
+        * cors errors are caused by the lambda function not returning proper header. can set the header in the response object in the lambda function.
+
+note: the changes in the cloud for api gateway and lambda security groups, execution roles are not overridden when you add code to the lambda function
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

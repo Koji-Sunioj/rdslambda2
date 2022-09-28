@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-rdslambda-dev-145639-authRole",
+      "UnauthRoleArn": "arn:aws:iam::531997442459:role/amplify-rdslambda-dev-145639-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::531997442459:role/amplify-rdslambda-dev-145639-authRole",
+      "Region": "eu-north-1",
+      "DeploymentBucketName": "amplify-rdslambda-dev-145639-deployment",
+      "UnauthRoleName": "amplify-rdslambda-dev-145639-unauthRole",
+      "StackName": "amplify-rdslambda-dev-145639",
+      "StackId": "arn:aws:cloudformation:eu-north-1:531997442459:stack/amplify-rdslambda-dev-145639/9e1b8690-3f24-11ed-affa-06503b9829dc",
+      "AmplifyAppId": "d1rv33njy4xo7y"
+    },
+    "categories": {
+      "function": {
+        "rdslambda2": {
+          "deploymentBucketName": "amplify-rdslambda-dev-145639-deployment",
+          "s3Key": "amplify-builds/rdslambda2-2f7250664b5547443742-build.zip"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/complaints/{id}": {
+      "name": "/complaints/{id}",
+      "lambdaFunction": "rdslambda2",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}
