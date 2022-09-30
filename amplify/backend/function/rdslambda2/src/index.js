@@ -22,7 +22,7 @@ exports.handler = async (event) => {
 
   switch (routeKey) {
     case "GET /complaints":
-      query = await pool.query("select id,complaint from eat_shit;");
+      query = await pool.query("select id,complaint from complaints;");
       return {
         statusCode: 200,
         headers: headers,
@@ -30,7 +30,7 @@ exports.handler = async (event) => {
       };
     case "GET /complaints/{id}":
       query = await pool.query(
-        `select id,complaint from eat_shit where id=${pathParameters.id};`
+        `select id,complaint from complaints where id=${pathParameters.id};`
       );
       return {
         statusCode: 200,
@@ -38,7 +38,7 @@ exports.handler = async (event) => {
         body: JSON.stringify(query.rows[0]),
       };
     case "POST /complaints":
-      command = "INSERT INTO eat_shit(complaint) VALUES($1) RETURNING *;";
+      command = "INSERT INTO complaints(complaint) VALUES($1) RETURNING *;";
       request = JSON.parse(event.body);
       values = [request.complaint];
       query = await pool.query(command, values);
@@ -49,7 +49,7 @@ exports.handler = async (event) => {
       };
     case "DELETE /complaints/{id}":
       query = await pool.query(
-        `delete from eat_shit where id=${pathParameters.id};`
+        `delete from complaints where id=${pathParameters.id};`
       );
       return {
         statusCode: 200,
@@ -59,7 +59,7 @@ exports.handler = async (event) => {
         }),
       };
     case "PATCH /complaints/{id}":
-      command = "UPDATE eat_shit set complaint=$1 where id=$2;";
+      command = "UPDATE complaints set complaint=$1 where id=$2;";
       request = JSON.parse(event.body);
       values = [request.complaint, pathParameters.id];
       query = await pool.query(command, values);
