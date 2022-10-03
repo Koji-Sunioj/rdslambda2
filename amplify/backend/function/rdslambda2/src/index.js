@@ -1,17 +1,33 @@
-const { Pool } = require("pg");
-const pool = new Pool({
-  user: "postgres",
-  host: "database-1.cfhhi0m77nho.eu-north-1.rds.amazonaws.com",
-  database: "fuckyou",
-  password: "FuckFuck",
-  port: 5432,
-});
-
 /**
  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
+const {
+  SecretsManagerClient,
+  GetSecretValueCommand,
+} = require("@aws-sdk/client-secrets-manager");
+const secretsManagerClient = new SecretsManagerClient({
+  region: "eu-north-1",
+});
+
+const { Pool } = require("pg");
+
 exports.handler = async (event) => {
-  console.log(event);
+  const params = {
+    SecretId: "rdslambda",
+  };
+  const command1 = new GetSecretValueCommand(params);
+  const { SecretString } = await secretsManagerClient.send(command1);
+
+  const { user, host, database, password, port } = JSON.parse(SecretString);
+  console.log(user, host, database, password, port);
+  const pool = new Pool({
+    user: user,
+    host: host,
+    database: database,
+    password: password,
+    port: Number(port),
+  });
+
   const { httpMethod, resource, pathParameters } = event;
   const routeKey = `${httpMethod} ${resource}`;
   let query, command, request, values;
@@ -26,7 +42,7 @@ exports.handler = async (event) => {
       return {
         statusCode: 200,
         headers: headers,
-        body: JSON.stringify(query.rows),
+        body: JSON.stringify(query.rows, user),
       };
     case "GET /complaints/{id}":
       query = await pool.query(
@@ -74,7 +90,7 @@ exports.handler = async (event) => {
       return {
         statusCode: 200,
         headers: headers,
-        body: JSON.stringify({ message: `${routeKey}` }),
+        body: JSON.stringify({ message: "no route key" }),
       };
   }
 };

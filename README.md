@@ -19,7 +19,10 @@ full stack with amplify and lambda as proxy for server
         * cors errors are caused by the lambda function not returning proper header. can set the header in the response object in the lambda function.
 
 note: the changes in the cloud for api gateway and lambda security groups, execution roles are not overridden when you add code to the lambda function
+note 3.10 : lambda must be configured with a nat gateway to access ssm since its deployed in vpc. when i remove the vpc it still works okay, as well as ssm
 
+10. npm install @aws-sdk/client-secrets-manager
+11. add the code for retrieving the secret in the function as needed
 
 
 # Getting Started with Create React App
