@@ -15,11 +15,10 @@ exports.handler = async (event) => {
   const params = {
     SecretId: "rdslambda",
   };
-  const command1 = new GetSecretValueCommand(params);
-  const { SecretString } = await secretsManagerClient.send(command1);
+  const secretQuery = new GetSecretValueCommand(params);
+  const { SecretString } = await secretsManagerClient.send(secretQuery);
 
   const { user, host, database, password, port } = JSON.parse(SecretString);
-  console.log(user, host, database, password, port);
   const pool = new Pool({
     user: user,
     host: host,
@@ -33,16 +32,19 @@ exports.handler = async (event) => {
   let query, command, request, values;
   const headers = {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Headers":
+      "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+    "Access-Control-Allow-Methods": "GET,POST,DELETE,PATCH",
   };
 
   switch (routeKey) {
     case "GET /complaints":
       query = await pool.query("select id,complaint from complaints;");
+      console.log(query.rows);
       return {
         statusCode: 200,
         headers: headers,
-        body: JSON.stringify(query.rows, user),
+        body: JSON.stringify(query.rows),
       };
     case "GET /complaints/{id}":
       query = await pool.query(

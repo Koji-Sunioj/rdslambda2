@@ -1,20 +1,14 @@
-import { API } from "aws-amplify";
-import { useEffect } from "react";
+import Pages from "./Pages";
+import NavBar from "./complonents/Navbar";
+
+import { BrowserRouter } from "react-router-dom";
 
 function App() {
-  useEffect(() => {
-    testApi();
-  }, []);
-
-  const testApi = async () => {
-    const response = await API.get("rdslambda2", "/complaints");
-    console.log(response);
-  };
-
   return (
-    <div>
-      <h1>Testing, testing... 1, 2, 3</h1>
-    </div>
+    <BrowserRouter>
+      <NavBar />
+      <Pages />
+    </BrowserRouter>
   );
 }
 

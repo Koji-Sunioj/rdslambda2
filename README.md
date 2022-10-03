@@ -20,9 +20,12 @@ full stack with amplify and lambda as proxy for server
 
 note: the changes in the cloud for api gateway and lambda security groups, execution roles are not overridden when you add code to the lambda function
 note 3.10 : lambda must be configured with a nat gateway to access ssm since its deployed in vpc. when i remove the vpc it still works okay, as well as ssm
+note: had to delete the options method and recreate it with lambda integration for it to work 
 
 10. npm install @aws-sdk/client-secrets-manager
-11. add the code for retrieving the secret in the function as needed
+11. add the code for retrieving the secret in the function as needed 
+12. npm install react-router-dom : installs v6.4.1
+
 
 
 # Getting Started with Create React App
