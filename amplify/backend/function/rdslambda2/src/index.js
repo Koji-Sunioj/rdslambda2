@@ -43,7 +43,7 @@ exports.handler = async (event) => {
   } catch {
     console.log("Token not valid!");
   }
-
+  ("asdasd");
   const routeKey = `${httpMethod} ${resource}`;
   let query, command, request, values;
   const returnHeaders = {
