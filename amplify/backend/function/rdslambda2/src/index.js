@@ -29,21 +29,22 @@ exports.handler = async (event) => {
   });
 
   const { httpMethod, resource, pathParameters, headers } = event;
-  const token = headers.Authorization.split(" ")[1];
-
+  const token = String(headers.Authorization).split(" ")[1];
+  console.log(token);
   const verifier = CognitoJwtVerifier.create({
     userPoolId: "eu-north-1_cDwntZxiY",
-    tokenUse: "access",
-    clientId: "142pe7gm0g9s8v2bvf2tgfo11h",
+    tokenUse: "id",
+    clientId: "1g7rpp9sakka3flr0i1v7h8dcp",
   });
 
   try {
     const payload = await verifier.verify(token);
+    console.log(payload);
     console.log("Token is valid. Payload:", payload);
   } catch {
     console.log("Token not valid!");
   }
-  ("asdasd");
+
   const routeKey = `${httpMethod} ${resource}`;
   let query, command, request, values;
   const returnHeaders = {
@@ -56,7 +57,6 @@ exports.handler = async (event) => {
   switch (routeKey) {
     case "GET /complaints":
       query = await pool.query("select id,complaint from complaints;");
-      console.log(query.rows);
       return {
         statusCode: 200,
         headers: returnHeaders,
