@@ -6,7 +6,6 @@ const Login = ({ loginChain }) => {
 
   const logInside = async (event) => {
     event.preventDefault();
-    console.log("testing");
     const { email, userPassword } = event.currentTarget;
     try {
       const user = await Auth.signIn(email.value, userPassword.value);

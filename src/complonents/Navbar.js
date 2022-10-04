@@ -1,15 +1,25 @@
 import { Auth } from "aws-amplify";
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const NavBar = ({ user, logOut }) => {
+  const guestOrUser = user === null;
+
   return (
     <div className="nav">
       <div>
-        <h1>Welcome {user === null ? "guest" : user.attributes.email}</h1>
+        <Link to={"/"}>
+          <h2>Welcome {guestOrUser ? "guest" : user.attributes.email}</h2>
+        </Link>
       </div>
+      {!guestOrUser && (
+        <div className="div-button">
+          <Link to={"/complaint-form"}>
+            <h2>Create Complaint</h2>
+          </Link>{" "}
+        </div>
+      )}
       <div className="div-button">
-        {user === null ? (
+        {guestOrUser ? (
           <Link to={"/login"}>
             <h2>Login</h2>
           </Link>
