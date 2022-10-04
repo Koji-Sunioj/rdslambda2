@@ -1,4 +1,4 @@
-import { API } from "aws-amplify";
+import { API, Auth } from "aws-amplify";
 import { useEffect, useState } from "react";
 import { Authenticator } from "@aws-amplify/ui-react";
 import { Link } from "react-router-dom";
@@ -7,20 +7,38 @@ const HomePage = () => {
   const [complaints, setComplaints] = useState(null);
 
   useEffect(() => {
+    // console.log(Auth.user);
     testApi();
   }, []);
 
   const testApi = async () => {
+    //const user = await Auth.currentAuthenticatedUser();
+    //console.log(user);
+
     const response = await API.get("rdslambda2", "/complaints");
     setComplaints(response);
   };
 
-  console.log(complaints);
-
   return (
-    <Authenticator>
+    <>
+      <h1>Testing, testing... 1, 2, 3</h1>
+      {complaints !== null &&
+        complaints.map((complaint) => (
+          <div key={complaint.id}>
+            <Link to={`complaint/${complaint.id}`}>
+              <p>{complaint.complaint}</p>
+            </Link>
+          </div>
+        ))}
+    </>
+  );
+};
+
+export default HomePage;
+
+/*<Authenticator>
       {({ signOut, user }) => {
-        console.log(user.attributes.email);
+        console.log(Auth.user);
         return (
           <main>
             <h1>Testing, testing... 1, 2, 3</h1>
@@ -36,8 +54,4 @@ const HomePage = () => {
           </main>
         );
       }}
-    </Authenticator>
-  );
-};
-
-export default HomePage;
+    </Authenticator> */

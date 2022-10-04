@@ -1,34 +1,29 @@
 import { Auth } from "aws-amplify";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
-const NavBar = () => {
-  const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    getUser();
-  }, [Auth]);
-
-  const getUser = async () => {
-    try {
-      const user = await Auth.currentUserInfo();
-      setCurrentUser(user.attributes.email);
-    } catch (error) {
-      console.log("no user");
-    }
-  };
-
-  console.log(currentUser);
-
+const NavBar = ({ user, logOut }) => {
   return (
-    <div>
-      <h1>Welcome bitch</h1>
-      <button
-        onClick={() => {
-          Auth.signOut();
-        }}
-      >
-        sign out
-      </button>
+    <div className="nav">
+      <div>
+        <h1>Welcome {user === null ? "guest" : user.attributes.email}</h1>
+      </div>
+      <div className="div-button">
+        {user === null ? (
+          <Link to={"/login"}>
+            <h2>Login</h2>
+          </Link>
+        ) : (
+          <button
+            onClick={() => {
+              Auth.signOut();
+              logOut();
+            }}
+          >
+            Log Out
+          </button>
+        )}
+      </div>
     </div>
   );
 };
