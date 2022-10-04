@@ -8,6 +8,7 @@ const {
 const secretsManagerClient = new SecretsManagerClient({
   region: "eu-north-1",
 });
+const { CognitoJwtVerifier } = require("aws-jwt-verify");
 
 const { Pool } = require("pg");
 
@@ -27,10 +28,25 @@ exports.handler = async (event) => {
     port: Number(port),
   });
 
-  const { httpMethod, resource, pathParameters } = event;
+  const { httpMethod, resource, pathParameters, headers } = event;
+  const token = headers.Authorization.split(" ")[1];
+
+  const verifier = CognitoJwtVerifier.create({
+    userPoolId: "eu-north-1_cDwntZxiY",
+    tokenUse: "access",
+    clientId: "142pe7gm0g9s8v2bvf2tgfo11h",
+  });
+
+  try {
+    const payload = await verifier.verify(token);
+    console.log("Token is valid. Payload:", payload);
+  } catch {
+    console.log("Token not valid!");
+  }
+
   const routeKey = `${httpMethod} ${resource}`;
   let query, command, request, values;
-  const headers = {
+  const returnHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers":
       "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
@@ -43,7 +59,7 @@ exports.handler = async (event) => {
       console.log(query.rows);
       return {
         statusCode: 200,
-        headers: headers,
+        headers: returnHeaders,
         body: JSON.stringify(query.rows),
       };
     case "GET /complaints/{id}":
@@ -52,7 +68,7 @@ exports.handler = async (event) => {
       );
       return {
         statusCode: 200,
-        headers: headers,
+        headers: returnHeaders,
         body: JSON.stringify(query.rows[0]),
       };
     case "POST /complaints":
@@ -62,7 +78,7 @@ exports.handler = async (event) => {
       query = await pool.query(command, values);
       return {
         statusCode: 200,
-        headers: headers,
+        headers: returnHeaders,
         body: JSON.stringify(query.rows),
       };
     case "DELETE /complaints/{id}":
@@ -71,7 +87,7 @@ exports.handler = async (event) => {
       );
       return {
         statusCode: 200,
-        headers: headers,
+        headers: returnHeaders,
         body: JSON.stringify({
           message: `complaint ${pathParameters.id} deleted`,
         }),
@@ -83,7 +99,7 @@ exports.handler = async (event) => {
       query = await pool.query(command, values);
       return {
         statusCode: 200,
-        headers: headers,
+        headers: returnHeaders,
         body: JSON.stringify({
           message: `complaint ${pathParameters.id} updated`,
         }),
@@ -91,7 +107,7 @@ exports.handler = async (event) => {
     default:
       return {
         statusCode: 200,
-        headers: headers,
+        headers: returnHeaders,
         body: JSON.stringify({ message: "no route key" }),
       };
   }

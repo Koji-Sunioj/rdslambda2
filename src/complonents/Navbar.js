@@ -6,19 +6,19 @@ const NavBar = ({ user, logOut }) => {
 
   return (
     <div className="nav">
-      <div>
+      <div className="child">
         <Link to={"/"}>
           <h2>Welcome {guestOrUser ? "guest" : user.attributes.email}</h2>
         </Link>
       </div>
       {!guestOrUser && (
-        <div className="div-button">
+        <div className="child">
           <Link to={"/complaint-form"}>
             <h2>Create Complaint</h2>
           </Link>{" "}
         </div>
       )}
-      <div className="div-button">
+      <div className="child">
         {guestOrUser ? (
           <Link to={"/login"}>
             <h2>Login</h2>

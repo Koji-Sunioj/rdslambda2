@@ -19,6 +19,10 @@ const Pages = () => {
   const getUser = async () => {
     try {
       const user = await Auth.currentAuthenticatedUser();
+      console.log(user);
+      const someting = await (await Auth.currentSession()).getIdToken();
+      console.log(someting);
+      //console.log(user.signInUserSession.accessToken.jwtToken);
       setUser(user);
     } catch (error) {
       setUser(null);
@@ -37,12 +41,17 @@ const Pages = () => {
           setUser(null);
         }}
       />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/complaint-form" element={<ComplaintForm user={user} />} />
-        <Route path="/login" element={<Login loginChain={setLogin} />} />
-        <Route path="/complaint/:complaintId" element={<Complaint />} />
-      </Routes>
+      <div style={{ border: "1px solid #ccc", padding: "20px" }}>
+        <Routes>
+          <Route path="/" element={<HomePage user={user} />} />
+          <Route
+            path="/complaint-form"
+            element={<ComplaintForm user={user} />}
+          />
+          <Route path="/login" element={<Login loginChain={setLogin} />} />
+          <Route path="/complaint/:complaintId" element={<Complaint />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 };

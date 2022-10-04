@@ -1,8 +1,8 @@
-import { API } from "aws-amplify";
+import { API, Auth } from "aws-amplify";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const HomePage = () => {
+const HomePage = ({ user }) => {
   const [complaints, setComplaints] = useState(null);
 
   useEffect(() => {
@@ -10,7 +10,15 @@ const HomePage = () => {
   }, []);
 
   const testApi = async () => {
-    const response = await API.get("rdslambda2", "/complaints");
+    let headers = {};
+    user !== null &&
+      Object.assign(headers, {
+        Authorization: `Bearer ${user.signInUserSession.idToken.jwtToken}`,
+      });
+    console.log(headers);
+    const response = await API.get("rdslambda2", "/complaints", {
+      headers,
+    });
     setComplaints(response);
   };
 

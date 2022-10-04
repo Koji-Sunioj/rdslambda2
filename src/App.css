@@ -1,8 +1,15 @@
 .nav {
   display: flex;
   flex-direction: row;
-  border-bottom: 1px solid black;
-  justify-content: space-between;
+}
+
+.child {
+  flex-grow: 1;
+  flex-basis: 0;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 
@@ -28,3 +35,12 @@
   flex-direction: row;
   justify-content: space-between;
 }
+
+
+/*.nav {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid black;
+  justify-content: space-between;
+}
+*/
