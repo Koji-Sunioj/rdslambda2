@@ -2,9 +2,10 @@
  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
 const { Pool } = require("pg");
-const { successObject } = require("./utils/headers");
+const { successObject, rejectObject } = require("./utils/headers");
 const { verifyToken } = require("./utils/token");
 const { getSecret } = require("./utils/ssm");
+const { checkSameUser } = require("./utils/check");
 
 exports.handler = async (event) => {
   const { user, host, database, password, port } = await getSecret("rdslambda");
@@ -42,8 +43,7 @@ exports.handler = async (event) => {
       switch (isValidUser.type) {
         case "guest":
           return {
-            ...successObject,
-            statusCode: 403,
+            ...rejectObject,
             body: JSON.stringify({
               message: "not authorized to create resource",
             }),
@@ -65,50 +65,77 @@ exports.handler = async (event) => {
       switch (isValidUser.type) {
         case "guest":
           return {
-            ...successObject,
-            statusCode: 403,
+            ...rejectObject,
             body: JSON.stringify({
               message: "not authorized to delete resource",
             }),
           };
 
         case "user":
-          query = await pool.query(
-            `delete from complaints where id=${pathParameters.id};`
+          const isSameUser = await checkSameUser(
+            pool,
+            isValidUser.user_email,
+            pathParameters.id
           );
-          return {
-            ...successObject,
-            body: JSON.stringify({
-              message: `complaint ${pathParameters.id} deleted`,
-            }),
-          };
+
+          if (isSameUser) {
+            query = await pool.query(
+              `delete from complaints where id=${pathParameters.id};`
+            );
+            return {
+              ...successObject,
+              body: JSON.stringify({
+                message: `complaint ${pathParameters.id} deleted`,
+              }),
+            };
+          } else {
+            return {
+              ...rejectObject,
+              body: JSON.stringify({
+                message: "not authorized to delete resource",
+              }),
+            };
+          }
       }
     case "PATCH /complaints/{id}":
       isValidUser = await verifyToken(headers);
       switch (isValidUser.type) {
         case "guest":
           return {
-            ...successObject,
-            statusCode: 403,
+            ...rejectObject,
             body: JSON.stringify({
               message: "not authorized to alter resource",
             }),
           };
 
         case "user":
-          command =
-            "UPDATE complaints set complaint=$1 where id=$2 RETURNING *;";
           request = JSON.parse(event.body);
-          values = [request.complaint, pathParameters.id];
-          query = await pool.query(command, values);
-          console.log(query.rows);
-          return {
-            ...successObject,
-            body: JSON.stringify({
-              message: `complaint ${pathParameters.id} updated`,
-              ...query.rows[0],
-            }),
-          };
+          const isSameUser = await checkSameUser(
+            pool,
+            isValidUser.user_email,
+            pathParameters.id
+          );
+
+          if (isSameUser) {
+            command =
+              "UPDATE complaints set complaint=$1 where id=$2 RETURNING *;";
+            values = [request.complaint, pathParameters.id];
+            query = await pool.query(command, values);
+            return {
+              ...successObject,
+              body: JSON.stringify({
+                message: `complaint ${pathParameters.id} updated`,
+                ...query.rows[0],
+              }),
+            };
+          } else {
+            return {
+              ...rejectObject,
+              body: JSON.stringify({
+                message: "not authorized to alter resource",
+              }),
+            };
+          }
       }
     default:
       return {
