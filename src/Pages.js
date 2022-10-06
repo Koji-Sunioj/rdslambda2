@@ -21,7 +21,7 @@ const Pages = () => {
       const user = await Auth.currentAuthenticatedUser();
       console.log(user);
       const someting = await (await Auth.currentSession()).getIdToken();
-      console.log(someting);
+      console.log(someting.jwtToken);
       //console.log(user.signInUserSession.accessToken.jwtToken);
       setUser(user);
     } catch (error) {

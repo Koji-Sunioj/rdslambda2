@@ -10,9 +10,9 @@ const verifyToken = async (headers) => {
 
   try {
     const payload = await verifier.verify(token);
-    return { user_email: payload.email, valid: true };
+    return { user_email: payload.email, type: "user" };
   } catch {
-    return { valid: false };
+    return { type: "guest" };
   }
 };
 
