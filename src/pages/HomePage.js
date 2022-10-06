@@ -10,7 +10,7 @@ const HomePage = ({ user }) => {
   }, []);
 
   const testApi = async () => {
-    let headers = {};
+    /*let headers = {};
     user !== null &&
       Object.assign(headers, {
         Authorization: `Bearer ${user.signInUserSession.idToken.jwtToken}`,
@@ -18,7 +18,8 @@ const HomePage = ({ user }) => {
     console.log(headers);
     const response = await API.get("rdslambda2", "/complaints", {
       headers,
-    });
+    });*/
+    const response = await API.get("rdslambda2", "/complaints");
     setComplaints(response);
   };
 
@@ -27,10 +28,14 @@ const HomePage = ({ user }) => {
       <h1>Current complaints</h1>
       {complaints !== null &&
         complaints.map((complaint) => (
-          <div key={complaint.id}>
+          <div
+            key={complaint.id}
+            style={{ border: "1px solid #ccc", padding: "20px" }}
+          >
             <Link to={`complaint/${complaint.id}`}>
               <p>{complaint.complaint}</p>
             </Link>
+            <p>{complaint.user_email}</p>
           </div>
         ))}
     </>
