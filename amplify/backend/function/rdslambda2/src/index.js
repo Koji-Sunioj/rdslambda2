@@ -2,10 +2,10 @@
  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
 const { Pool } = require("pg");
-const { successObject, rejectObject } = require("./utils/headers");
-const { verifyToken } = require("./utils/token");
 const { getSecret } = require("./utils/ssm");
+const { verifyToken } = require("./utils/token");
 const { checkSameUser } = require("./utils/check");
+const { successObject, rejectObject } = require("./utils/headers");
 
 exports.handler = async (event) => {
   const { user, host, database, password, port } = await getSecret("rdslambda");

@@ -14,7 +14,7 @@ const rejectObject = {
   statusCode: 403,
   headers: headers,
   body: JSON.stringify({
-    message: "no authorized to create or alter resource",
+    message: "not authorized to create or alter resource",
   }),
 };
 
