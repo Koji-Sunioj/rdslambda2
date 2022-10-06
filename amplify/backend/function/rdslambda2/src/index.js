@@ -42,13 +42,7 @@ exports.handler = async (event) => {
       isValidUser = await verifyToken(headers);
       switch (isValidUser.type) {
         case "guest":
-          return {
-            ...rejectObject,
-            body: JSON.stringify({
-              message: "not authorized to create resource",
-            }),
-          };
-
+          return rejectObject;
         case "user":
           command =
             "INSERT INTO complaints(complaint,user_email) VALUES($1,$2) RETURNING *;";
@@ -64,13 +58,7 @@ exports.handler = async (event) => {
       isValidUser = await verifyToken(headers);
       switch (isValidUser.type) {
         case "guest":
-          return {
-            ...rejectObject,
-            body: JSON.stringify({
-              message: "not authorized to delete resource",
-            }),
-          };
-
+          return rejectObject;
         case "user":
           const isSameUser = await checkSameUser(
             pool,
@@ -89,24 +77,14 @@ exports.handler = async (event) => {
               }),
             };
           } else {
-            return {
-              ...rejectObject,
-              body: JSON.stringify({
-                message: "not authorized to delete resource",
-              }),
-            };
+            return rejectObject;
           }
       }
     case "PATCH /complaints/{id}":
       isValidUser = await verifyToken(headers);
       switch (isValidUser.type) {
         case "guest":
-          return {
-            ...rejectObject,
-            body: JSON.stringify({
-              message: "not authorized to alter resource",
-            }),
-          };
+          return rejectObject;
 
         case "user":
           request = JSON.parse(event.body);
@@ -129,12 +107,7 @@ exports.handler = async (event) => {
               }),
             };
           } else {
-            return {
-              ...rejectObject,
-              body: JSON.stringify({
-                message: "not authorized to alter resource",
-              }),
-            };
+            return rejectObject;
           }
       }
     default:
