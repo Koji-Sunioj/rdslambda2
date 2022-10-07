@@ -19,10 +19,6 @@ const Pages = () => {
   const getUser = async () => {
     try {
       const user = await Auth.currentAuthenticatedUser();
-      console.log(user);
-      const someting = await (await Auth.currentSession()).getIdToken();
-      console.log(someting.jwtToken);
-      //console.log(user.signInUserSession.accessToken.jwtToken);
       setUser(user);
     } catch (error) {
       setUser(null);
@@ -49,7 +45,10 @@ const Pages = () => {
             element={<ComplaintForm user={user} />}
           />
           <Route path="/login" element={<Login loginChain={setLogin} />} />
-          <Route path="/complaint/:complaintId" element={<Complaint />} />
+          <Route
+            path="/complaint/:complaintId"
+            element={<Complaint user={user} />}
+          />
         </Routes>
       </div>
     </BrowserRouter>
