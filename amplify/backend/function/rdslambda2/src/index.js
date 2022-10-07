@@ -2,10 +2,10 @@
  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
 const { Pool } = require("pg");
-const { getSecret } = require("./utils/ssm");
-const { verifyToken } = require("./utils/token");
-const { checkSameUser } = require("./utils/check");
 const { successObject, rejectObject } = require("./utils/headers");
+const { verifyToken } = require("./utils/token");
+const { getSecret } = require("./utils/ssm");
+const { checkSameUser } = require("./utils/check");
 
 exports.handler = async (event) => {
   const { user, host, database, password, port } = await getSecret("rdslambda");
@@ -51,7 +51,10 @@ exports.handler = async (event) => {
           query = await pool.query(command, values);
           return {
             ...successObject,
-            body: JSON.stringify(query.rows[0]),
+            body: JSON.stringify({
+              message: "complaint created",
+              ...query.rows[0],
+            }),
           };
       }
     case "DELETE /complaints/{id}":

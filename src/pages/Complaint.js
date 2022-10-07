@@ -1,7 +1,6 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { API } from "aws-amplify";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const Complaint = ({ user }) => {
   const navigate = useNavigate();
@@ -46,13 +45,27 @@ const Complaint = ({ user }) => {
           <p>{complaint.complaint}</p>
           <p>{complaint.user_email}</p>
           {user !== null && user.attributes.email === complaint.user_email && (
-            <button
-              onClick={() => {
-                deleteComplaint(complaint.id);
-              }}
-            >
-              Delete
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  deleteComplaint(complaint.id);
+                }}
+              >
+                Delete
+              </button>
+              <button>
+                <Link
+                  style={{
+                    textDecoration: "none",
+                    color: "black",
+                    cursor: "default",
+                  }}
+                  to={`/edit-complaint/${complaint.id}`}
+                >
+                  Edit
+                </Link>
+              </button>
+            </>
           )}
         </div>
       )}

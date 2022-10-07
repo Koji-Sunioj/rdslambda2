@@ -1,9 +1,9 @@
 import { API } from "aws-amplify";
 import { useNavigate } from "react-router-dom";
+import ComplantForm from "../complonents/ComplaintForm";
 
-const ComplaintForm = ({ user }) => {
+const CreateComplaint = ({ user }) => {
   const navigate = useNavigate();
-  console.log(user);
   const createPost = async (event) => {
     event.preventDefault();
     const {
@@ -29,14 +29,7 @@ const ComplaintForm = ({ user }) => {
     status === 200 && setTimeout(navigate("/"), 500);
   };
 
-  return (
-    <form className="login" onSubmit={createPost}>
-      <div>
-        <label htmlFor="complaint">complaint: </label>
-        <input type="text" name="complaint" disabled={user === null} />
-      </div>
-    </form>
-  );
+  return <ComplantForm sendPost={createPost} user={user} />;
 };
 
-export default ComplaintForm;
+export default CreateComplaint;

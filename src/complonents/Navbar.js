@@ -13,7 +13,7 @@ const NavBar = ({ user, logOut }) => {
       </div>
       {!guestOrUser && (
         <div className="child">
-          <Link to={"/complaint-form"}>
+          <Link to={"/create-complaint"}>
             <h2>Create Complaint</h2>
           </Link>{" "}
         </div>

@@ -2,7 +2,8 @@ import { Routes, Route, BrowserRouter } from "react-router-dom";
 import NavBar from "./complonents/Navbar";
 import HomePage from "./pages/HomePage";
 import Complaint from "./pages/Complaint";
-import ComplaintForm from "./pages/ComplaintForm";
+import CreateComplaint from "./pages/CreateComplaint";
+import EditComplaint from "./pages/EditComplaint";
 import Login from "./pages/Login";
 
 import { Auth } from "aws-amplify";
@@ -41,8 +42,12 @@ const Pages = () => {
         <Routes>
           <Route path="/" element={<HomePage user={user} />} />
           <Route
-            path="/complaint-form"
-            element={<ComplaintForm user={user} />}
+            path="/create-complaint"
+            element={<CreateComplaint user={user} />}
+          />
+          <Route
+            path="/edit-complaint/:complaintId"
+            element={<EditComplaint user={user} />}
           />
           <Route path="/login" element={<Login loginChain={setLogin} />} />
           <Route
