@@ -1,5 +1,5 @@
 import { Auth } from "aws-amplify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Login = ({ loginChain }) => {
   let navigate = useNavigate();
@@ -12,22 +12,26 @@ const Login = ({ loginChain }) => {
       loginChain(user);
       navigate("/");
     } catch (error) {
-      console.log("error signing in", error);
+      alert("error signing in");
     }
   };
 
   return (
-    <form onSubmit={logInside} className="login">
-      <div>
-        <label htmlFor="email">email:</label>
-        <input type="text" name="email" />
-      </div>
-      <div>
-        <label htmlFor="userPassword">password:</label>
-        <input name="userPassword" type="password" />
-      </div>
-      <button type="submit">Go</button>
-    </form>
+    <>
+      <h1>Login Page</h1>
+      <form onSubmit={logInside} className="login">
+        <div>
+          <label htmlFor="email">email:</label>
+          <input type="text" name="email" />
+        </div>
+        <div>
+          <label htmlFor="userPassword">password:</label>
+          <input name="userPassword" type="password" />
+        </div>
+        <button type="submit">Go</button>
+      </form>
+      <Link to={"/sign-up"}>Don't have an account? Sign up!</Link>
+    </>
   );
 };
 

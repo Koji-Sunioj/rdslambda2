@@ -5,6 +5,7 @@ import Complaint from "./pages/Complaint";
 import CreateComplaint from "./pages/CreateComplaint";
 import EditComplaint from "./pages/EditComplaint";
 import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
 
 import { Auth } from "aws-amplify";
 import { useEffect, useState } from "react";
@@ -54,6 +55,10 @@ const Pages = () => {
             path="/complaint/:complaintId"
             element={<Complaint user={user} />}
           />
+          <Route
+            path="/sign-up"
+            element={<SignUp loginChain={setLogin} />}
+          ></Route>
         </Routes>
       </div>
     </BrowserRouter>
