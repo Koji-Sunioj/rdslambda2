@@ -1,7 +1,9 @@
 import { API } from "aws-amplify";
 import { useNavigate, useParams } from "react-router-dom";
 
-const ComplantForm = ({ requestType, user }) => {
+const ComplantForm = ({ requestType, user, complaint }) => {
+  console.log(complaint);
+
   const { complaintId } = useParams();
   const navigate = useNavigate();
   const sendPost = async (event) => {
@@ -51,7 +53,12 @@ const ComplantForm = ({ requestType, user }) => {
     >
       <div>
         <label htmlFor="complaint">complaint: </label>
-        <input type="text" name="complaint" disabled={user === null} />
+        <input
+          type="text"
+          name="complaint"
+          disabled={user === null}
+          defaultValue={complaint}
+        />
       </div>
     </form>
   );
