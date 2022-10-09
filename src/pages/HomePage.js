@@ -18,17 +18,24 @@ const HomePage = () => {
     <>
       <h1>Current complaints</h1>
       {complaints !== null &&
-        complaints.map((complaint) => (
-          <div
-            key={complaint.id}
-            style={{ border: "1px solid #ccc", padding: "20px" }}
-          >
-            <Link to={`complaint/${complaint.id}`}>
-              <p>{complaint.complaint}</p>
-            </Link>
-            <p>{complaint.user_email}</p>
-          </div>
-        ))}
+        complaints.map((complaint, n) => {
+          let value = (n += 1);
+          return (
+            <div
+              key={complaint.id}
+              style={{
+                border: "1px solid #ccc",
+                padding: "20px",
+                animation: `fadeIn ${value / 4}s`,
+              }}
+            >
+              <Link to={`complaint/${complaint.id}`}>
+                <p>{complaint.complaint}</p>
+              </Link>
+              <p>{complaint.user_email}</p>
+            </div>
+          );
+        })}
     </>
   );
 };
