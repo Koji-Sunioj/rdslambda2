@@ -15,27 +15,28 @@ const ComplantForm = ({ requestType, user, complaint }) => {
   const navigate = useNavigate();
   const sendPost = async (event) => {
     event.preventDefault();
-    // const file = event.currentTarget.picture.files[0];
-    // console.log(file);
     const {
       currentTarget: {
         complaint: { value: complaint },
         picture: { files: picture },
       },
     } = event;
-    const { name, size, type } = picture[0];
-    const upload = { name, size, type };
-    upload.binary = await toBase64(picture[0]);
 
     const options = {
       headers: {
         Authorization: `Bearer ${user.signInUserSession.idToken.jwtToken}`,
       },
       response: true,
-      body: { complaint: complaint, file: upload },
+      body: { complaint: complaint },
     };
 
-    console.log(options);
+    if (picture.length > 0) {
+      const { name, size, type } = picture[0];
+      const binary = await toBase64(picture[0]);
+      Object.assign(options.body, {
+        file: { name, size, type, binary: binary },
+      });
+    }
     let toBeAltered, path;
     switch (requestType) {
       case "edit":
@@ -56,7 +57,7 @@ const ComplantForm = ({ requestType, user, complaint }) => {
       data: { message },
     } = toBeAltered;
     alert(message);
-    //status === 200 && setTimeout(navigate(path), 500);
+    status === 200 && setTimeout(navigate(path), 500);
   };
 
   return (
@@ -75,7 +76,15 @@ const ComplantForm = ({ requestType, user, complaint }) => {
           disabled={user === null}
           defaultValue={complaint}
         />
-        <input type="file" name="picture" />
+      </div>
+      <div>
+        <label htmlFor="picture">picture: </label>
+        <input
+          type="file"
+          name="picture"
+          accept="image/*"
+          style={{ width: "50%" }}
+        />
       </div>
     </form>
   );

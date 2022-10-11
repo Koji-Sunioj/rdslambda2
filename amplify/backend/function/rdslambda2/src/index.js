@@ -3,14 +3,13 @@
  */
 
 const { Pool } = require("pg");
-const aws = require("aws-sdk");
 const { successObject, rejectObject } = require("./utils/headers");
 const { verifyToken } = require("./utils/token");
 const { getSecret } = require("./utils/ssm");
 const { checkSameUser } = require("./utils/check");
+const { depositS3 } = require("./utils/s3");
 
 exports.handler = async (event) => {
-  console.log(aws.VERSION);
   const { user, host, database, password, port } = await getSecret("rdslambda");
   const pool = new Pool({
     user: user,
@@ -27,7 +26,7 @@ exports.handler = async (event) => {
   switch (routeKey) {
     case "GET /complaints":
       query = await pool.query(
-        "select id,complaint,user_email from complaints order by id ASC;"
+        "select id,complaint,user_email,picture from complaints order by id ASC;"
       );
       return {
         ...successObject,
@@ -43,39 +42,26 @@ exports.handler = async (event) => {
       };
     case "POST /complaints":
       isValidUser = await verifyToken(headers);
-      const s3 = new aws.S3();
-      request = JSON.parse(event.body);
-      const {
-        complaint,
-        file: { name, size, binary, type },
-      } = request;
-      const decodedFile = Buffer.from(binary, "base64");
-      const params = {
-        Bucket: "rdslambda2",
-        Key: name,
-        Body: decodedFile,
-        ContentType: type,
-      };
-      const uploadResult = await s3.upload(params).promise();
-
       switch (isValidUser.type) {
         case "guest":
           return rejectObject;
         case "user":
-          /*command =
-              "INSERT INTO complaints(complaint,user_email) VALUES($1,$2) RETURNING *;";
-              
-            //request = JSON.parse(event.body);
-            values = [result.complaint, isValidUser.user_email];
-            query = await pool.query(command, values);
-            return {
-              ...successObject,
-              body: JSON.stringify({
-                message: "complaint created",
-                ...query.rows[0],
-              }),
-            };*/
-          return { ...successObject, body: JSON.stringify({ message: "sit" }) };
+          const { complaint, file } = JSON.parse(event.body);
+          values = [complaint, isValidUser.user_email, null];
+          if (file) {
+            const uri = await depositS3(file);
+            values[2] = uri;
+          }
+          command =
+            "INSERT INTO complaints(complaint,user_email,picture) VALUES($1,$2,$3) RETURNING *;";
+          query = await pool.query(command, values);
+          return {
+            ...successObject,
+            body: JSON.stringify({
+              message: "complaint created",
+              ...query.rows[0],
+            }),
+          };
       }
     case "DELETE /complaints/{id}":
       isValidUser = await verifyToken(headers);
