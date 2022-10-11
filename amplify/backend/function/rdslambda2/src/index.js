@@ -1,13 +1,16 @@
 /**
  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
+
 const { Pool } = require("pg");
+const aws = require("aws-sdk");
 const { successObject, rejectObject } = require("./utils/headers");
 const { verifyToken } = require("./utils/token");
 const { getSecret } = require("./utils/ssm");
 const { checkSameUser } = require("./utils/check");
 
 exports.handler = async (event) => {
+  console.log(aws.VERSION);
   const { user, host, database, password, port } = await getSecret("rdslambda");
   const pool = new Pool({
     user: user,
@@ -40,22 +43,39 @@ exports.handler = async (event) => {
       };
     case "POST /complaints":
       isValidUser = await verifyToken(headers);
+      const s3 = new aws.S3();
+      request = JSON.parse(event.body);
+      const {
+        complaint,
+        file: { name, size, binary, type },
+      } = request;
+      const decodedFile = Buffer.from(binary, "base64");
+      const params = {
+        Bucket: "rdslambda2",
+        Key: name,
+        Body: decodedFile,
+        ContentType: type,
+      };
+      const uploadResult = await s3.upload(params).promise();
+
       switch (isValidUser.type) {
         case "guest":
           return rejectObject;
         case "user":
-          command =
-            "INSERT INTO complaints(complaint,user_email) VALUES($1,$2) RETURNING *;";
-          request = JSON.parse(event.body);
-          values = [request.complaint, isValidUser.user_email];
-          query = await pool.query(command, values);
-          return {
-            ...successObject,
-            body: JSON.stringify({
-              message: "complaint created",
-              ...query.rows[0],
-            }),
-          };
+          /*command =
+              "INSERT INTO complaints(complaint,user_email) VALUES($1,$2) RETURNING *;";
+              
+            //request = JSON.parse(event.body);
+            values = [result.complaint, isValidUser.user_email];
+            query = await pool.query(command, values);
+            return {
+              ...successObject,
+              body: JSON.stringify({
+                message: "complaint created",
+                ...query.rows[0],
+              }),
+            };*/
+          return { ...successObject, body: JSON.stringify({ message: "sit" }) };
       }
     case "DELETE /complaints/{id}":
       isValidUser = await verifyToken(headers);

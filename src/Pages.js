@@ -21,6 +21,7 @@ const Pages = () => {
   const getUser = async () => {
     try {
       const user = await Auth.currentAuthenticatedUser();
+      console.log(user.signInUserSession.idToken.jwtToken);
       setUser(user);
     } catch (error) {
       setUser(null);
