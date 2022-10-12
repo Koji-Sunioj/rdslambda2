@@ -14,4 +14,13 @@ const depositS3 = async (file) => {
   return uploadResult.Location;
 };
 
-module.exports = { depositS3 };
+const removeS3 = async (name) => {
+  const s3 = new aws.S3();
+  const params = {
+    Bucket: "rdslambda2",
+    Key: name,
+  };
+  await s3.deleteObject(params).promise();
+};
+
+module.exports = { depositS3, removeS3 };

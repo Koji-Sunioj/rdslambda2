@@ -31,10 +31,10 @@ const ComplantForm = ({ requestType, user, complaint }) => {
     };
 
     if (picture.length > 0) {
-      const { name, size, type } = picture[0];
+      const { size, type } = picture[0];
       const binary = await toBase64(picture[0]);
       Object.assign(options.body, {
-        file: { name, size, type, binary: binary },
+        file: { size, type, binary: binary },
       });
     }
     let toBeAltered, path;
@@ -52,6 +52,7 @@ const ComplantForm = ({ requestType, user, complaint }) => {
         path = "/";
         break;
     }
+    console.log(toBeAltered);
     const {
       request: { status },
       data: { message },
