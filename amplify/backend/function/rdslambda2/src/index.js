@@ -57,7 +57,10 @@ exports.handler = async (event) => {
           query = await client.query(command, values);
           if (file) {
             const { id } = query.rows[0];
-            const uri = await depositS3({ ...file, name: `complaint_${id}` });
+            const uri = await depositS3({
+              ...file,
+              name: `complaint_${id}${file.extension}`,
+            });
             command = "UPDATE complaints set picture=$1 where id=$2;";
             await client.query(command, [uri, id]);
             query.rows[0].picture = uri;
@@ -89,8 +92,11 @@ exports.handler = async (event) => {
             );
             const { picture } = query.rows[0];
             if (picture) {
-              const complaintId = picture.match(/complaint_[0-9]{1,3}/g)[0];
-              await removeS3(complaintId);
+              const complaintPic = picture.match(
+                /complaint_[0-9]{1,3}.[a-z]{1,3}/g
+              )[0];
+              console.log(complaintPic);
+              await removeS3(complaintPic);
             }
             return {
               ...successObject,

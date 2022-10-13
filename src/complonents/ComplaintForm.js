@@ -11,6 +11,24 @@ const ComplantForm = ({ requestType, user, complaint }) => {
       reader.onerror = (error) => reject(error);
     });
 
+  const addPicture = async (picture) => {
+    const { size, type, name } = picture;
+    size > 125000 &&
+      (() => {
+        throw new Error("too big");
+      })();
+
+    const binary = await toBase64(picture);
+    return {
+      file: {
+        size,
+        type,
+        binary: binary,
+        extension: name.match(/\.[0-9a-z]+$/g)[0],
+      },
+    };
+  };
+
   const { complaintId } = useParams();
   const navigate = useNavigate();
   const sendPost = async (event) => {
@@ -29,36 +47,34 @@ const ComplantForm = ({ requestType, user, complaint }) => {
       response: true,
       body: { complaint: complaint },
     };
-
-    if (picture.length > 0) {
-      const { size, type } = picture[0];
-      const binary = await toBase64(picture[0]);
-      Object.assign(options.body, {
-        file: { size, type, binary: binary },
-      });
+    try {
+      picture.length > 0 &&
+        Object.assign(options.body, await addPicture(picture[0]));
+      let toBeAltered, path;
+      switch (requestType) {
+        case "edit":
+          toBeAltered = await API.patch(
+            "rdslambda2",
+            `/complaints/${complaintId}`,
+            options
+          );
+          path = `/complaint/${complaintId}`;
+          break;
+        case "create":
+          toBeAltered = await API.post("rdslambda2", "/complaints/", options);
+          path = "/";
+          break;
+      }
+      console.log(toBeAltered);
+      const {
+        request: { status },
+        data: { message },
+      } = toBeAltered;
+      alert(message);
+      status === 200 && setTimeout(navigate(path), 500);
+    } catch (error) {
+      alert(error);
     }
-    let toBeAltered, path;
-    switch (requestType) {
-      case "edit":
-        toBeAltered = await API.patch(
-          "rdslambda2",
-          `/complaints/${complaintId}`,
-          options
-        );
-        path = `/complaint/${complaintId}`;
-        break;
-      case "create":
-        toBeAltered = await API.post("rdslambda2", "/complaints/", options);
-        path = "/";
-        break;
-    }
-    console.log(toBeAltered);
-    const {
-      request: { status },
-      data: { message },
-    } = toBeAltered;
-    alert(message);
-    status === 200 && setTimeout(navigate(path), 500);
   };
 
   return (
