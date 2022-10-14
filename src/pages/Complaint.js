@@ -40,13 +40,13 @@ const Complaint = ({ user }) => {
   return (
     <>
       {complaint !== null && (
-        <div>
+        <div style={{ animation: `fadeIn 1s` }}>
           <h1>complaint number: {complaint.id}</h1>
           <p>{complaint.complaint}</p>
           <p>{complaint.user_email}</p>
-          <img src={complaint.picture} />
+          <img src={complaint.picture} style={{ display: "block" }} />
           {user !== null && user.attributes.email === complaint.user_email && (
-            <>
+            <div style={{ paddingTop: "20px" }}>
               <button
                 onClick={() => {
                   deleteComplaint(complaint.id);
@@ -66,7 +66,7 @@ const Complaint = ({ user }) => {
                   Edit
                 </Link>
               </button>
-            </>
+            </div>
           )}
         </div>
       )}

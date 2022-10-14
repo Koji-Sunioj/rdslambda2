@@ -1,7 +1,35 @@
 import { API } from "aws-amplify";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-const ComplantForm = ({ requestType, user, complaint }) => {
+const ComplantForm = ({ requestType, user, response = null }) => {
+  const navigate = useNavigate();
+  const { complaintId } = useParams();
+  const [file, setFile] = useState("");
+  const [preview, setPreview] = useState(null);
+  const [complaint, setComplaint] = useState("");
+  const [initBinary, setInitBinary] = useState(null);
+  const renderRevert = user !== null && response !== null;
+
+  useEffect(() => {
+    response !== null &&
+      (() => {
+        setComplaint(response.complaint);
+        response.picture !== null && fetchBlob(response.picture);
+      })();
+  }, [response]);
+
+  const fetchBlob = (uri) => {
+    setPreview(uri);
+    fetch(uri, {
+      method: "GET",
+    })
+      .then((res) => res.blob())
+      .then(async (blob) => {
+        setInitBinary(await toBase64(blob));
+      });
+  };
+
   const toBase64 = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -13,11 +41,10 @@ const ComplantForm = ({ requestType, user, complaint }) => {
 
   const addPicture = async (picture) => {
     const { size, type, name } = picture;
-    size > 125000 &&
+    size > 5242880 &&
       (() => {
         throw new Error("too big");
       })();
-
     const binary = await toBase64(picture);
     return {
       file: {
@@ -29,8 +56,6 @@ const ComplantForm = ({ requestType, user, complaint }) => {
     };
   };
 
-  const { complaintId } = useParams();
-  const navigate = useNavigate();
   const sendPost = async (event) => {
     event.preventDefault();
     const {
@@ -39,17 +64,44 @@ const ComplantForm = ({ requestType, user, complaint }) => {
         picture: { files: picture },
       },
     } = event;
-
     const options = {
       headers: {
         Authorization: `Bearer ${user.signInUserSession.idToken.jwtToken}`,
       },
       response: true,
-      body: { complaint: complaint },
+      body: {},
     };
+
+    const isDifComplaint =
+      requestType === "create" ||
+      (requestType === "edit" &&
+        complaint.length > 0 &&
+        complaint !== response.complaint);
+    isDifComplaint && Object.assign(options.body, { complaint: complaint });
+
+    let binaryFile = {};
+
+    picture.length > 0 &&
+      (async () => {})((binaryFile = await addPicture(picture[0])));
+
+    const isDifPhoto =
+      requestType === "create" ||
+      (requestType === "edit" &&
+        "file" in binaryFile &&
+        binaryFile.file.binary !== initBinary);
+
+    isDifPhoto && Object.assign(options.body, binaryFile);
+
+    console.log(options);
+    /*picture.length > 0 &&
+      Object.assign(options.body, await addPicture(picture[0]));
+
+    const isSamePhoto =
+      "file" in options.body && options.body.file.binary === initBinary;
+    const isSameComplaint = options.body.complaint === response.complaint;
+
     try {
-      picture.length > 0 &&
-        Object.assign(options.body, await addPicture(picture[0]));
+      
       let toBeAltered, path;
       switch (requestType) {
         case "edit":
@@ -65,7 +117,6 @@ const ComplantForm = ({ requestType, user, complaint }) => {
           path = "/";
           break;
       }
-      console.log(toBeAltered);
       const {
         request: { status },
         data: { message },
@@ -74,36 +125,66 @@ const ComplantForm = ({ requestType, user, complaint }) => {
       status === 200 && setTimeout(navigate(path), 500);
     } catch (error) {
       alert(error);
-    }
+    }*/
   };
 
   return (
-    <form
-      encType="multipart/form-data"
-      className="login"
-      onSubmit={(e) => {
-        sendPost(e);
-      }}
-    >
-      <div>
-        <label htmlFor="complaint">complaint: </label>
-        <input
-          type="text"
-          name="complaint"
-          disabled={user === null}
-          defaultValue={complaint}
-        />
-      </div>
-      <div>
-        <label htmlFor="picture">picture: </label>
-        <input
-          type="file"
-          name="picture"
-          accept="image/*"
-          style={{ width: "50%" }}
-        />
-      </div>
-    </form>
+    <>
+      <form
+        encType="multipart/form-data"
+        className="login"
+        onSubmit={(e) => {
+          sendPost(e);
+        }}
+      >
+        <fieldset>
+          <div>
+            <label htmlFor="complaint">complaint: </label>
+            <input
+              type="text"
+              name="complaint"
+              onChange={(e) => {
+                setComplaint(e.currentTarget.value);
+              }}
+              value={complaint}
+            />
+          </div>
+          <div>
+            <label htmlFor="picture">picture: </label>
+            <input
+              value={file}
+              type="file"
+              name="picture"
+              accept="image/*"
+              onChange={(e) => {
+                setFile(e.currentTarget.value);
+                e.currentTarget.files.length > 0
+                  ? (() => {
+                      const objectUrl = URL.createObjectURL(
+                        e.currentTarget.files[0]
+                      );
+                      setPreview(objectUrl);
+                      return () => URL.revokeObjectURL(objectUrl);
+                    })()
+                  : setPreview(null);
+              }}
+            />
+          </div>
+          <img src={preview} />
+        </fieldset>
+      </form>
+      {renderRevert && (
+        <button
+          onClick={() => {
+            setComplaint(response.complaint);
+            setPreview(response.picture);
+            setFile("");
+          }}
+        >
+          Revert changes
+        </button>
+      )}
+    </>
   );
 };
 

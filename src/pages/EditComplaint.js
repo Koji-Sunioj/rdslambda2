@@ -13,12 +13,10 @@ const EditComplaint = ({ user }) => {
 
   const getComplaint = async () => {
     const response = await API.get("rdslambda2", `/complaints/${complaintId}`);
-    setComplaint(response.complaint);
+    setComplaint(response);
   };
 
-  return (
-    <ComplantForm requestType={"edit"} user={user} complaint={complaint} />
-  );
+  return <ComplantForm requestType={"edit"} user={user} response={complaint} />;
 };
 
 export default EditComplaint;
