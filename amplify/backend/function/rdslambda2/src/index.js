@@ -57,10 +57,7 @@ exports.handler = async (event) => {
           query = await client.query(command, values);
           if (file) {
             const { id } = query.rows[0];
-            const uri = await depositS3({
-              ...file,
-              name: `complaint_${id}${file.extension}`,
-            });
+            const uri = await depositS3({ ...file, name: `complaint_${id}` });
             command = "UPDATE complaints set picture=$1 where id=$2;";
             await client.query(command, [uri, id]);
             query.rows[0].picture = uri;
@@ -92,10 +89,7 @@ exports.handler = async (event) => {
             );
             const { picture } = query.rows[0];
             if (picture) {
-              const complaintPic = picture.match(
-                /complaint_[0-9]{1,3}.[a-z]{1,3}/g
-              )[0];
-              console.log(complaintPic);
+              const complaintPic = picture.match(/complaint_[0-9]{1,3}/g)[0];
               await removeS3(complaintPic);
             }
             return {
@@ -115,7 +109,6 @@ exports.handler = async (event) => {
           return rejectObject;
 
         case "user":
-          request = JSON.parse(event.body);
           const isSameUser = await checkSameUser(
             pool,
             isValidUser.user_email,
@@ -123,15 +116,34 @@ exports.handler = async (event) => {
           );
 
           if (isSameUser) {
+            const client = await pool.connect();
+            const { complaint, file, removePhoto } = JSON.parse(event.body);
+            await client.query("BEGIN");
             command =
-              "UPDATE complaints set complaint=$1 where id=$2 RETURNING *;";
-            values = [request.complaint, pathParameters.id];
-            query = await pool.query(command, values);
+              "UPDATE complaints set complaint=$1 where id=$2 RETURNING picture;";
+            query = await client.query(command, [complaint, pathParameters.id]);
+            if (removePhoto) {
+              await removeS3(removePhoto);
+              command = "UPDATE complaints set picture = null where id = $1;";
+              await client.query(command, [pathParameters.id]);
+            } else if (file) {
+              const uri = await depositS3({
+                ...file,
+                name: `complaint_${pathParameters.id}`,
+              });
+              const { picture } = query.rows[0];
+              if (picture === null) {
+                command = "UPDATE complaints set picture = $1 where id = $2;";
+                await client.query(command, [uri, pathParameters.id]);
+              }
+            }
+            //command =  `select id,complaint,user_email,picture from complaints where id=${pathParameters.id};`
+            //query = await client.query(command)
+            await client.query("COMMIT");
             return {
               ...successObject,
               body: JSON.stringify({
                 message: `complaint ${pathParameters.id} updated`,
-                ...query.rows[0],
               }),
             };
           } else {

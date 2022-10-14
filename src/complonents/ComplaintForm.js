@@ -1,4 +1,5 @@
 import { API } from "aws-amplify";
+import addPicture from "../utils/to64";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -6,55 +7,18 @@ const ComplantForm = ({ requestType, user, response = null }) => {
   const navigate = useNavigate();
   const { complaintId } = useParams();
   const [file, setFile] = useState("");
+  const [checked, setChecked] = useState(false);
   const [preview, setPreview] = useState(null);
   const [complaint, setComplaint] = useState("");
-  const [initBinary, setInitBinary] = useState(null);
-  const renderRevert = user !== null && response !== null;
+  const hasPicture = response !== null && response.picture !== null;
 
   useEffect(() => {
     response !== null &&
       (() => {
         setComplaint(response.complaint);
-        response.picture !== null && fetchBlob(response.picture);
+        response.picture !== null && setPreview(response.picture);
       })();
   }, [response]);
-
-  const fetchBlob = (uri) => {
-    setPreview(uri);
-    fetch(uri, {
-      method: "GET",
-    })
-      .then((res) => res.blob())
-      .then(async (blob) => {
-        setInitBinary(await toBase64(blob));
-      });
-  };
-
-  const toBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () =>
-        resolve(reader.result.replace(/^data:image\/\w+;base64,/, ""));
-      reader.onerror = (error) => reject(error);
-    });
-
-  const addPicture = async (picture) => {
-    const { size, type, name } = picture;
-    size > 5242880 &&
-      (() => {
-        throw new Error("too big");
-      })();
-    const binary = await toBase64(picture);
-    return {
-      file: {
-        size,
-        type,
-        binary: binary,
-        extension: name.match(/\.[0-9a-z]+$/g)[0],
-      },
-    };
-  };
 
   const sendPost = async (event) => {
     event.preventDefault();
@@ -64,6 +28,7 @@ const ComplantForm = ({ requestType, user, response = null }) => {
         picture: { files: picture },
       },
     } = event;
+
     const options = {
       headers: {
         Authorization: `Bearer ${user.signInUserSession.idToken.jwtToken}`,
@@ -72,37 +37,20 @@ const ComplantForm = ({ requestType, user, response = null }) => {
       body: {},
     };
 
-    const isDifComplaint =
-      requestType === "create" ||
-      (requestType === "edit" &&
-        complaint.length > 0 &&
-        complaint !== response.complaint);
-    isDifComplaint && Object.assign(options.body, { complaint: complaint });
+    const getFile = /complaint_[0-9]{1,3}/g;
 
-    let binaryFile = {};
-
-    picture.length > 0 &&
-      (async () => {})((binaryFile = await addPicture(picture[0])));
-
-    const isDifPhoto =
-      requestType === "create" ||
-      (requestType === "edit" &&
-        "file" in binaryFile &&
-        binaryFile.file.binary !== initBinary);
-
-    isDifPhoto && Object.assign(options.body, binaryFile);
-
-    console.log(options);
-    /*picture.length > 0 &&
-      Object.assign(options.body, await addPicture(picture[0]));
-
-    const isSamePhoto =
-      "file" in options.body && options.body.file.binary === initBinary;
-    const isSameComplaint = options.body.complaint === response.complaint;
+    complaint.length > 0 &&
+      Object.assign(options.body, { complaint: complaint });
+    checked
+      ? Object.assign(options.body, {
+          removePhoto: response.picture.match(getFile)[0],
+        })
+      : picture.length > 0 &&
+        Object.assign(options.body, await addPicture(picture[0]));
 
     try {
-      
       let toBeAltered, path;
+      console.log(options);
       switch (requestType) {
         case "edit":
           toBeAltered = await API.patch(
@@ -125,7 +73,7 @@ const ComplantForm = ({ requestType, user, response = null }) => {
       status === 200 && setTimeout(navigate(path), 500);
     } catch (error) {
       alert(error);
-    }*/
+    }
   };
 
   return (
@@ -137,20 +85,38 @@ const ComplantForm = ({ requestType, user, response = null }) => {
           sendPost(e);
         }}
       >
-        <fieldset>
+        <div>
+          <label htmlFor="complaint">complaint: </label>
+          <input
+            type="text"
+            name="complaint"
+            onChange={(e) => {
+              setComplaint(e.currentTarget.value);
+            }}
+            value={complaint}
+          />
+        </div>
+        {hasPicture && (
           <div>
-            <label htmlFor="complaint">complaint: </label>
+            <label htmlFor="removePhoto">no photo </label>
             <input
-              type="text"
-              name="complaint"
-              onChange={(e) => {
-                setComplaint(e.currentTarget.value);
+              value={checked}
+              name="removePhoto"
+              type={"checkbox"}
+              onClick={(e) => {
+                const {
+                  currentTarget: { checked },
+                } = e;
+                setChecked(checked);
               }}
-              value={complaint}
             />
           </div>
+        )}
+        <fieldset disabled={checked}>
           <div>
-            <label htmlFor="picture">picture: </label>
+            <label htmlFor="picture">
+              {hasPicture ? "replace photo" : "new photo"}
+            </label>
             <input
               value={file}
               type="file"
@@ -158,7 +124,12 @@ const ComplantForm = ({ requestType, user, response = null }) => {
               accept="image/*"
               onChange={(e) => {
                 setFile(e.currentTarget.value);
-                e.currentTarget.files.length > 0
+                const {
+                  currentTarget: {
+                    files: { length },
+                  },
+                } = e;
+                length > 0
                   ? (() => {
                       const objectUrl = URL.createObjectURL(
                         e.currentTarget.files[0]
@@ -166,19 +137,41 @@ const ComplantForm = ({ requestType, user, response = null }) => {
                       setPreview(objectUrl);
                       return () => URL.revokeObjectURL(objectUrl);
                     })()
-                  : setPreview(null);
+                  : (() => {
+                      hasPicture
+                        ? setPreview(response.picture)
+                        : setPreview(null);
+                    })();
               }}
             />
           </div>
-          <img src={preview} />
+
+          {preview !== null && (
+            <figure>
+              <img src={preview} alt="current selection" />
+              <figcaption>
+                {file !== ""
+                  ? "current file selection"
+                  : "current selection from complaint"}
+              </figcaption>
+            </figure>
+          )}
         </fieldset>
       </form>
-      {renderRevert && (
+      {user !== null && (
         <button
           onClick={() => {
-            setComplaint(response.complaint);
-            setPreview(response.picture);
-            setFile("");
+            response === null
+              ? (() => {
+                  setComplaint("");
+                  setPreview(null);
+                  setFile("");
+                })()
+              : (() => {
+                  setComplaint(response.complaint);
+                  setPreview(response.picture);
+                  setFile("");
+                })();
           }}
         >
           Revert changes
