@@ -33,7 +33,9 @@ const HomePage = () => {
                 <p>{complaint.complaint}</p>
               </Link>
               <p>{complaint.user_email}</p>
-              <img src={complaint.picture} />
+              {complaint.picture && (
+                <img src={`${complaint.picture}?${Date.now()}`} />
+              )}
             </div>
           );
         })}

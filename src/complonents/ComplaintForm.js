@@ -148,7 +148,14 @@ const ComplantForm = ({ requestType, user, response = null }) => {
 
           {preview !== null && (
             <figure>
-              <img src={preview} alt="current selection" />
+              <img
+                src={
+                  preview === response.picture
+                    ? `${preview}?${Date.now()}`
+                    : preview
+                }
+                alt="current selection"
+              />
               <figcaption>
                 {file !== ""
                   ? "current file selection"
