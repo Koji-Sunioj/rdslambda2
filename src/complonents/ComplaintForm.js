@@ -69,6 +69,7 @@ const ComplantForm = ({ requestType, user, response = null }) => {
         request: { status },
         data: { message },
       } = toBeAltered;
+      console.log(toBeAltered);
       alert(message);
       status === 200 && setTimeout(navigate(path), 500);
     } catch (error) {

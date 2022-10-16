@@ -48,18 +48,17 @@ exports.handler = async (event) => {
           values = [complaint, user_email];
           await client.query("BEGIN");
           command =
-            "INSERT INTO complaints(complaint,user_email) VALUES($1,$2) RETURNING id;";
+            "INSERT INTO complaints(complaint,user_email) VALUES($1,$2) RETURNING *;";
           query = await client.query(command, values);
-          if (file) {
-            const { id } = query.rows[0];
-            const uri = await depositS3(
-              { ...file, name: `complaint_${id}` },
-              bucket
-            );
-            command = "UPDATE complaints set picture=$1 where id=$2;";
-            await client.query(command, [uri, id]);
-            query.rows[0].picture = uri;
-          }
+          const { id } = query.rows[0];
+          const secondCommand = "UPDATE complaints set picture=$1 where id=$2;";
+          file &&
+            (await depositS3({ ...file, name: `complaint_${id}` }, bucket).then(
+              async (uri) => {
+                (query.rows[0].picture = uri),
+                  await client.query(secondCommand, [uri, id]);
+              }
+            ));
           await client.query("COMMIT");
           return {
             ...successObject,
@@ -79,10 +78,8 @@ exports.handler = async (event) => {
             `delete from complaints where id=${pathParameters.id} returning picture;`
           );
           const { picture } = query.rows[0];
-          if (picture) {
-            const complaintPic = picture.match(/complaint_[0-9]{1,3}/g)[0];
-            await removeS3(complaintPic, bucket);
-          }
+          const fileReg = /complaint_[0-9]{1,3}/g;
+          picture && (await removeS3(picture.match(fileReg)[0], bucket));
           return {
             ...successObject,
             body: JSON.stringify({
@@ -106,6 +103,7 @@ exports.handler = async (event) => {
             await removeS3(removePhoto, bucket);
             command = "UPDATE complaints set picture = null where id = $1;";
             await client.query(command, [pathParameters.id]);
+            query.rows[0].picture = null;
           } else if (file) {
             const uri = await depositS3(
               {
@@ -115,11 +113,11 @@ exports.handler = async (event) => {
               bucket
             );
             const { picture } = query.rows[0];
-            if (picture === null) {
-              command = "UPDATE complaints set picture = $1 where id = $2;";
-              await client.query(command, [uri, pathParameters.id]);
-              query.rows[0].picture = uri;
-            }
+            command = "UPDATE complaints set picture = $1 where id = $2;";
+            picture === null &&
+              client.query(command, [uri, pathParameters.id]).then(() => {
+                query.rows[0].picture = uri;
+              });
           }
           await client.query("COMMIT");
           return {

@@ -15,7 +15,7 @@
       "function": {
         "rdslambda2": {
           "deploymentBucketName": "amplify-rdslambda-dev-145639-deployment",
-          "s3Key": "amplify-builds/rdslambda2-5245576c534d702f4f55-build.zip",
+          "s3Key": "amplify-builds/rdslambda2-5165364c39444833636e-build.zip",
           "secretsPathAmplifyAppId": "d1rv33njy4xo7y"
         }
       },
