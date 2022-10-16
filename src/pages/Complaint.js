@@ -44,11 +44,14 @@ const Complaint = ({ user }) => {
           <h1>complaint number: {complaint.id}</h1>
           <p>{complaint.complaint}</p>
           <p>{complaint.user_email}</p>
-          <img
-            style={{ display: "block" }}
-            key={Date.now()}
-            src={`${complaint.picture}?${Date.now()}`}
-          />
+          {complaint.picture && (
+            <img
+              style={{ display: "block" }}
+              key={Date.now()}
+              src={`${complaint.picture}?${Date.now()}`}
+            />
+          )}
+
           {user !== null && user.attributes.email === complaint.user_email && (
             <div style={{ paddingTop: "20px" }}>
               <button

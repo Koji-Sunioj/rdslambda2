@@ -150,7 +150,7 @@ const ComplantForm = ({ requestType, user, response = null }) => {
             <figure>
               <img
                 src={
-                  preview === response.picture
+                  hasPicture && preview === response.picture
                     ? `${preview}?${Date.now()}`
                     : preview
                 }

@@ -1,7 +1,3 @@
-/**
- * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
- */
-
 const { Pool } = require("pg");
 const { successObject, rejectObject } = require("./utils/headers");
 const { verifyToken } = require("./utils/token");
@@ -10,7 +6,9 @@ const { checkSameUser } = require("./utils/check");
 const { depositS3, removeS3 } = require("./utils/s3");
 
 exports.handler = async (event) => {
-  const { user, host, database, password, port } = await getSecret("rdslambda");
+  const { user, host, database, password, port, bucket } = await getSecret(
+    "rdslambda"
+  );
   const pool = new Pool({
     user: user,
     host: host,
@@ -21,14 +19,14 @@ exports.handler = async (event) => {
 
   const { httpMethod, resource, pathParameters, headers } = event;
   const routeKey = `${httpMethod} ${resource}`;
-  let query, command, request, values, isValidUser;
+  let query, command, values, isValidUser;
 
   switch (routeKey) {
     case "GET /complaints":
-      const testing = await removeS3("complaint_107");
       query = await pool.query(
         "select id,complaint,user_email,picture from complaints order by id ASC;"
       );
+      await pool.end();
       return {
         ...successObject,
         body: JSON.stringify(query.rows),
@@ -57,7 +55,10 @@ exports.handler = async (event) => {
           query = await client.query(command, values);
           if (file) {
             const { id } = query.rows[0];
-            const uri = await depositS3({ ...file, name: `complaint_${id}` });
+            const uri = await depositS3(
+              { ...file, name: `complaint_${id}` },
+              bucket
+            );
             command = "UPDATE complaints set picture=$1 where id=$2;";
             await client.query(command, [uri, id]);
             query.rows[0].picture = uri;
@@ -90,7 +91,7 @@ exports.handler = async (event) => {
             const { picture } = query.rows[0];
             if (picture) {
               const complaintPic = picture.match(/complaint_[0-9]{1,3}/g)[0];
-              await removeS3(complaintPic);
+              await removeS3(complaintPic, bucket);
             }
             return {
               ...successObject,
@@ -120,30 +121,33 @@ exports.handler = async (event) => {
             const { complaint, file, removePhoto } = JSON.parse(event.body);
             await client.query("BEGIN");
             command =
-              "UPDATE complaints set complaint=$1 where id=$2 RETURNING picture;";
+              "UPDATE complaints set complaint=$1 where id=$2 RETURNING *;";
             query = await client.query(command, [complaint, pathParameters.id]);
             if (removePhoto) {
-              await removeS3(removePhoto);
+              await removeS3(removePhoto, bucket);
               command = "UPDATE complaints set picture = null where id = $1;";
               await client.query(command, [pathParameters.id]);
             } else if (file) {
-              const uri = await depositS3({
-                ...file,
-                name: `complaint_${pathParameters.id}`,
-              });
+              const uri = await depositS3(
+                {
+                  ...file,
+                  name: `complaint_${pathParameters.id}`,
+                },
+                bucket
+              );
               const { picture } = query.rows[0];
               if (picture === null) {
                 command = "UPDATE complaints set picture = $1 where id = $2;";
                 await client.query(command, [uri, pathParameters.id]);
+                query.rows[0].picture = uri;
               }
             }
-            //command =  `select id,complaint,user_email,picture from complaints where id=${pathParameters.id};`
-            //query = await client.query(command)
             await client.query("COMMIT");
             return {
               ...successObject,
               body: JSON.stringify({
                 message: `complaint ${pathParameters.id} updated`,
+                ...query.rows[0],
               }),
             };
           } else {
