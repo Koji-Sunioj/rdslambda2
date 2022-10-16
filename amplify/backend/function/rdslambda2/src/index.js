@@ -1,7 +1,7 @@
 const { Pool } = require("pg");
 const { getSecret } = require("./utils/ssm");
 const { verifyToken } = require("./utils/token");
-const { checkSameUser } = require("./utils/check");
+const { checkSameUser, checkRequester } = require("./utils/check");
 const { depositS3, removeS3 } = require("./utils/s3");
 const { successObject, rejectObject } = require("./utils/headers");
 
@@ -19,14 +19,7 @@ exports.handler = async (event) => {
 
   const { httpMethod, resource, pathParameters, headers } = event;
   const routeKey = `${httpMethod} ${resource}`;
-  let query,
-    command,
-    values,
-    isValidUser,
-    requester,
-    user_email,
-    type,
-    isSameUser;
+  let query, command, values, requester, user_email, type, isSameUser;
 
   switch (routeKey) {
     case "GET /complaints":
@@ -79,9 +72,7 @@ exports.handler = async (event) => {
           return rejectObject;
       }
     case "DELETE /complaints/{id}":
-      ({ user_email, type } = await verifyToken(headers));
-      isSameUser = await checkSameUser(pool, user_email, pathParameters.id);
-      requester = `${type} ${isSameUser}`;
+      requester = await checkRequester(headers, pathParameters.id, pool);
       switch (requester) {
         case "user same":
           query = await pool.query(
@@ -102,9 +93,7 @@ exports.handler = async (event) => {
           return rejectObject;
       }
     case "PATCH /complaints/{id}":
-      ({ user_email, type } = await verifyToken(headers));
-      isSameUser = await checkSameUser(pool, user_email, pathParameters.id);
-      requester = `${type} ${isSameUser}`;
+      requester = await checkRequester(headers, pathParameters.id, pool);
       switch (requester) {
         case "user same":
           const client = await pool.connect();

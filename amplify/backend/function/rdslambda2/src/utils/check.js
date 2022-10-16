@@ -1,3 +1,5 @@
+const { verifyToken } = require("./token");
+
 const checkSameUser = async (pool, user_email, id) => {
   const checkCommand =
     "select \
@@ -10,4 +12,10 @@ const checkSameUser = async (pool, user_email, id) => {
   return same_user;
 };
 
-module.exports = { checkSameUser };
+const checkRequester = async (headers, id, pool) => {
+  const { user_email, type } = await verifyToken(headers);
+  const isSameUser = await checkSameUser(pool, user_email, id);
+  return `${type} ${isSameUser}`;
+};
+
+module.exports = { checkSameUser, checkRequester };
