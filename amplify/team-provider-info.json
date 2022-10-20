@@ -17,6 +17,10 @@
           "deploymentBucketName": "amplify-rdslambda-dev-145639-deployment",
           "s3Key": "amplify-builds/rdslambda2-5165364c39444833636e-build.zip",
           "secretsPathAmplifyAppId": "d1rv33njy4xo7y"
+        },
+        "placesapi": {
+          "deploymentBucketName": "amplify-rdslambda-dev-145639-deployment",
+          "s3Key": "amplify-builds/placesapi-7457394d674e52486e51-build.zip"
         }
       },
       "auth": {

@@ -7,6 +7,13 @@
       "permissions": {
         "setting": "open"
       }
+    },
+    "/places": {
+      "name": "/places",
+      "lambdaFunction": "placesapi",
+      "permissions": {
+        "setting": "open"
+      }
     }
   }
 }

@@ -4,6 +4,12 @@
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    },
+    "placesapi": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": []
     }
   },
   "api": {
@@ -14,6 +20,14 @@
         {
           "category": "function",
           "resourceName": "rdslambda2",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "placesapi",
           "attributes": [
             "Name",
             "Arn"
