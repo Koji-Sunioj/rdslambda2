@@ -8,11 +8,12 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 
 import { Auth } from "aws-amplify";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { setTheUser, unSetUser } from "./app/reducers/userSlice";
 
 const Pages = () => {
-  //user.signInUserSession.accessToken.jwtToken
-  const [user, setUser] = useState(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     getUser();
@@ -21,45 +22,32 @@ const Pages = () => {
   const getUser = async () => {
     try {
       const user = await Auth.currentAuthenticatedUser();
+      dispatch(
+        setTheUser({
+          jwt: user.signInUserSession.idToken.jwtToken,
+          id: user.attributes.email,
+        })
+      );
       console.log(user.signInUserSession.idToken.jwtToken);
-      setUser(user);
     } catch (error) {
-      setUser(null);
+      dispatch(unSetUser());
     }
-  };
-
-  const setLogin = (cognitoObject) => {
-    setUser(cognitoObject);
   };
 
   return (
     <BrowserRouter>
-      <NavBar
-        user={user}
-        logOut={() => {
-          setUser(null);
-        }}
-      />
+      <NavBar />
       <div style={{ border: "1px solid #ccc", padding: "20px" }}>
         <Routes>
-          <Route path="/" element={<HomePage user={user} />} />
-          <Route
-            path="/create-complaint"
-            element={<CreateComplaint user={user} />}
-          />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/create-complaint" element={<CreateComplaint />} />
           <Route
             path="/edit-complaint/:complaintId"
-            element={<EditComplaint user={user} />}
+            element={<EditComplaint />}
           />
-          <Route path="/login" element={<Login loginChain={setLogin} />} />
-          <Route
-            path="/complaint/:complaintId"
-            element={<Complaint user={user} />}
-          />
-          <Route
-            path="/sign-up"
-            element={<SignUp loginChain={setLogin} />}
-          ></Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/complaint/:complaintId" element={<Complaint />} />
+          <Route path="/sign-up" element={<SignUp l />}></Route>
         </Routes>
       </div>
     </BrowserRouter>

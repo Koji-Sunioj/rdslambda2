@@ -1,8 +1,11 @@
 import { Auth } from "aws-amplify";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setTheUser } from "../app/reducers/userSlice";
 
-const SignUp = ({ loginChain }) => {
+const SignUp = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [signFlow, setSignFlow] = useState(null);
   const [pwd, setPwd] = useState(null);
@@ -34,12 +37,17 @@ const SignUp = ({ loginChain }) => {
         signFlow.username,
         confirmation
       );
-      switch (signUpResponse) {
-        case "SUCCESS":
+      signUpResponse === "SUCCESS" &&
+        (async () => {
           const user = await Auth.signIn(signFlow.username, pwd);
-          loginChain(user);
+          dispatch(
+            setTheUser({
+              jwt: user.signInUserSession.idToken.jwtToken,
+              id: user.attributes.email,
+            })
+          );
           navigate("/");
-      }
+        })();
     } catch (error) {
       alert(error);
     }

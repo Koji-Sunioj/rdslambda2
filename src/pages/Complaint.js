@@ -1,11 +1,13 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { API } from "aws-amplify";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
-const Complaint = ({ user }) => {
+const Complaint = () => {
   const navigate = useNavigate();
   const { complaintId } = useParams();
   const [complaint, setComplaint] = useState(null);
+  const user = useSelector((state) => state.user);
 
   useEffect(() => {
     getComplaint();
@@ -19,7 +21,7 @@ const Complaint = ({ user }) => {
   const deleteComplaint = async (complaintId) => {
     const options = {
       headers: {
-        Authorization: `Bearer ${user.signInUserSession.idToken.jwtToken}`,
+        Authorization: `Bearer ${user.jwt}`,
       },
       response: true,
     };
@@ -34,7 +36,7 @@ const Complaint = ({ user }) => {
       data: { message },
     } = toBeDeleted;
     alert(message);
-    status == 200 && setTimeout(navigate("/"), 500);
+    status === 200 && setTimeout(navigate("/"), 500);
   };
 
   return (
@@ -49,10 +51,11 @@ const Complaint = ({ user }) => {
               style={{ display: "block" }}
               key={Date.now()}
               src={`${complaint.picture}?${Date.now()}`}
+              alt={complaint.complaint}
             />
           )}
 
-          {user !== null && user.attributes.email === complaint.user_email && (
+          {user !== null && user.id === complaint.user_email && (
             <div style={{ paddingTop: "20px" }}>
               <button
                 onClick={() => {

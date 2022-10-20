@@ -2,9 +2,13 @@ import { API } from "aws-amplify";
 import addPicture from "../utils/to64";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { initialState } from "../app/reducers/userSlice";
 
-const ComplantForm = ({ requestType, user, response = null }) => {
+const ComplantForm = ({ requestType, response = null }) => {
   const navigate = useNavigate();
+  const user = useSelector((state) => state.user);
+  const guestOrUser = user === initialState;
   const { complaintId } = useParams();
   const [file, setFile] = useState("");
   const [checked, setChecked] = useState(false);
@@ -31,12 +35,12 @@ const ComplantForm = ({ requestType, user, response = null }) => {
 
     const options = {
       headers: {
-        Authorization: `Bearer ${user.signInUserSession.idToken.jwtToken}`,
+        Authorization: `Bearer ${user.jwt}`,
       },
       response: true,
       body: {},
     };
-
+    console.log(options);
     const getFile = /complaint_[0-9]{1,3}/g;
 
     complaint.length > 0 &&
@@ -50,7 +54,6 @@ const ComplantForm = ({ requestType, user, response = null }) => {
 
     try {
       let toBeAltered, path;
-      console.log(options);
       switch (requestType) {
         case "edit":
           toBeAltered = await API.patch(
@@ -64,12 +67,13 @@ const ComplantForm = ({ requestType, user, response = null }) => {
           toBeAltered = await API.post("rdslambda2", "/complaints/", options);
           path = "/";
           break;
+        default:
+          alert("missing action");
       }
       const {
         request: { status },
         data: { message },
       } = toBeAltered;
-      console.log(toBeAltered);
       alert(message);
       status === 200 && setTimeout(navigate(path), 500);
     } catch (error) {
@@ -166,7 +170,7 @@ const ComplantForm = ({ requestType, user, response = null }) => {
           )}
         </fieldset>
       </form>
-      {user !== null && (
+      {guestOrUser !== null && (
         <button
           onClick={() => {
             response === null

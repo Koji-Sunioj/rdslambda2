@@ -1,7 +1,7 @@
 import ComplantForm from "../complonents/ComplaintForm";
 
-const CreateComplaint = ({ user }) => {
-  return <ComplantForm requestType={"create"} user={user} />;
+const CreateComplaint = () => {
+  return <ComplantForm requestType={"create"} />;
 };
 
 export default CreateComplaint;

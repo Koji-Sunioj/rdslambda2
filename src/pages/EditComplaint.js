@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { API } from "aws-amplify";
 
-const EditComplaint = ({ user }) => {
+const EditComplaint = () => {
   const { complaintId } = useParams();
   const [complaint, setComplaint] = useState(null);
 
@@ -16,7 +16,7 @@ const EditComplaint = ({ user }) => {
     setComplaint(response);
   };
 
-  return <ComplantForm requestType={"edit"} user={user} response={complaint} />;
+  return <ComplantForm requestType={"edit"} response={complaint} />;
 };
 
 export default EditComplaint;

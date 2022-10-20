@@ -1,10 +1,12 @@
 import { API } from "aws-amplify";
+import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const HomePage = () => {
   const [complaints, setComplaints] = useState(null);
-
+  const user = useSelector((state) => state.user);
+  console.log(user);
   useEffect(() => {
     getAllComplaints();
   }, []);
@@ -34,7 +36,10 @@ const HomePage = () => {
               </Link>
               <p>{complaint.user_email}</p>
               {complaint.picture && (
-                <img src={`${complaint.picture}?${Date.now()}`} />
+                <img
+                  src={`${complaint.picture}?${Date.now()}`}
+                  alt={complaint.complaint}
+                />
               )}
             </div>
           );

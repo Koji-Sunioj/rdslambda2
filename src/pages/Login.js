@@ -1,7 +1,10 @@
 import { Auth } from "aws-amplify";
 import { useNavigate, Link } from "react-router-dom";
+import { setTheUser } from "../app/reducers/userSlice";
+import { useDispatch } from "react-redux";
 
-const Login = ({ loginChain }) => {
+const Login = () => {
+  const dispatch = useDispatch();
   let navigate = useNavigate();
 
   const logInside = async (event) => {
@@ -9,7 +12,12 @@ const Login = ({ loginChain }) => {
     const { email, userPassword } = event.currentTarget;
     try {
       const user = await Auth.signIn(email.value, userPassword.value);
-      loginChain(user);
+      dispatch(
+        setTheUser({
+          jwt: user.signInUserSession.idToken.jwtToken,
+          id: user.attributes.email,
+        })
+      );
       navigate("/");
     } catch (error) {
       alert("error signing in");
