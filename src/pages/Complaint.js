@@ -1,13 +1,13 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
 import { API } from "aws-amplify";
-import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 
 const Complaint = () => {
   const navigate = useNavigate();
   const { complaintId } = useParams();
-  const [complaint, setComplaint] = useState(null);
   const user = useSelector((state) => state.user);
+  const [complaint, setComplaint] = useState(null);
 
   useEffect(() => {
     getComplaint();

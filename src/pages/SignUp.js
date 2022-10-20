@@ -1,7 +1,7 @@
 import { Auth } from "aws-amplify";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { setTheUser } from "../app/reducers/userSlice";
 
 const SignUp = () => {

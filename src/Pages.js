@@ -28,7 +28,6 @@ const Pages = () => {
           id: user.attributes.email,
         })
       );
-      console.log(user.signInUserSession.idToken.jwtToken);
     } catch (error) {
       dispatch(unSetUser());
     }

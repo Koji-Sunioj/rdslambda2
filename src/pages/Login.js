@@ -1,7 +1,7 @@
 import { Auth } from "aws-amplify";
+import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { setTheUser } from "../app/reducers/userSlice";
-import { useDispatch } from "react-redux";
 
 const Login = () => {
   const dispatch = useDispatch();

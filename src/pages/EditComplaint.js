@@ -1,7 +1,7 @@
-import ComplantForm from "../complonents/ComplaintForm";
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { API } from "aws-amplify";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import ComplantForm from "../complonents/ComplaintForm";
 
 const EditComplaint = () => {
   const { complaintId } = useParams();

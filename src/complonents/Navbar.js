@@ -1,7 +1,7 @@
 import { Auth } from "aws-amplify";
 import { Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 import { unSetUser } from "../app/reducers/userSlice";
+import { useSelector, useDispatch } from "react-redux";
 import { initialState } from "../app/reducers/userSlice";
 
 const NavBar = ({ logOut }) => {
@@ -33,7 +33,6 @@ const NavBar = ({ logOut }) => {
             onClick={() => {
               Auth.signOut();
               dispatch(unSetUser());
-              logOut();
             }}
           >
             Log Out

@@ -20,7 +20,7 @@
         },
         "placesapi": {
           "deploymentBucketName": "amplify-rdslambda-dev-145639-deployment",
-          "s3Key": "amplify-builds/placesapi-7457394d674e52486e51-build.zip"
+          "s3Key": "amplify-builds/placesapi-7a426366386965786d45-build.zip"
         }
       },
       "auth": {

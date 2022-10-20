@@ -1,9 +1,11 @@
 import { API } from "aws-amplify";
 import addPicture from "../utils/to64";
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
 import { initialState } from "../app/reducers/userSlice";
+import { useNavigate, useParams } from "react-router-dom";
+
+import Map from "./Map";
 
 const ComplantForm = ({ requestType, response = null }) => {
   const navigate = useNavigate();
@@ -40,7 +42,6 @@ const ComplantForm = ({ requestType, response = null }) => {
       response: true,
       body: {},
     };
-    console.log(options);
     const getFile = /complaint_[0-9]{1,3}/g;
 
     complaint.length > 0 &&
@@ -64,6 +65,7 @@ const ComplantForm = ({ requestType, response = null }) => {
           path = `/complaint/${complaintId}`;
           break;
         case "create":
+          console.log("something");
           toBeAltered = await API.post("rdslambda2", "/complaints/", options);
           path = "/";
           break;
@@ -101,6 +103,7 @@ const ComplantForm = ({ requestType, response = null }) => {
             value={complaint}
           />
         </div>
+
         {hasPicture && (
           <div>
             <label htmlFor="removePhoto">no photo </label>
@@ -170,7 +173,7 @@ const ComplantForm = ({ requestType, response = null }) => {
           )}
         </fieldset>
       </form>
-      {guestOrUser !== null && (
+      {!guestOrUser && (
         <button
           onClick={() => {
             response === null
@@ -189,8 +192,45 @@ const ComplantForm = ({ requestType, response = null }) => {
           Revert changes
         </button>
       )}
+      <div>
+        <Map />
+        <button
+          onClick={async () => {
+            const init = {
+              headers: {
+                Authorization: `Bearer ${user.jwt}`,
+              },
+              response: true,
+            };
+            console.log(user.jwt);
+            const place = await API.get(
+              "rdslambda2",
+              "/places?query=point&coords=60.413837,25.10294",
+              init
+            );
+            console.log(place);
+          }}
+        >
+          test
+        </button>
+      </div>
     </>
   );
 };
 
 export default ComplantForm;
+
+/*
+  <div>
+          <label htmlFor="location">location: </label>
+          <input type="search" name="location" />
+        </div>
+ <div>
+          <label htmlFor="location">location: </label>
+          <input type="search" name="location" />
+        </div>
+        <div>
+          <div>
+            <Map />
+          </div>
+        </div>*/
