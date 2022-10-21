@@ -1,7 +1,7 @@
 const { Pool } = require("pg");
 const { getSecret } = require("./utils/ssm");
 const { verifyToken } = require("./utils/token");
-const { checkSameUser, checkRequester } = require("./utils/check");
+const { checkRequester } = require("./utils/check");
 const { depositS3, removeS3 } = require("./utils/s3");
 const { successObject, rejectObject } = require("./utils/headers");
 
@@ -20,11 +20,12 @@ exports.handler = async (event) => {
   const { httpMethod, resource, pathParameters, headers } = event;
   const routeKey = `${httpMethod} ${resource}`;
   let query, command, values, requester, user_email, type, isSameUser;
+  console.log(event);
 
   switch (routeKey) {
     case "GET /complaints":
       query = await pool.query(
-        "select id,complaint,user_email,picture from complaints order by id ASC;"
+        "select id,complaint,user_email,picture,place from complaints order by id ASC;"
       );
       return {
         ...successObject,
@@ -32,7 +33,7 @@ exports.handler = async (event) => {
       };
     case "GET /complaints/{id}":
       query = await pool.query(
-        `select id,complaint,user_email, picture from complaints where id=${pathParameters.id};`
+        `select id,complaint,user_email, picture,place from complaints where id=${pathParameters.id};`
       );
       return {
         ...successObject,
@@ -44,11 +45,11 @@ exports.handler = async (event) => {
       switch (type) {
         case "user":
           const client = await pool.connect();
-          const { complaint, file } = JSON.parse(event.body);
-          values = [complaint, user_email];
+          const { complaint, file, place } = JSON.parse(event.body);
+          values = [complaint, user_email, JSON.stringify(place)];
           await client.query("BEGIN");
           command =
-            "INSERT INTO complaints(complaint,user_email) VALUES($1,$2) RETURNING *;";
+            "INSERT INTO complaints(complaint,user_email,place) VALUES($1,$2,$3) RETURNING *;";
           query = await client.query(command, values);
           const { id } = query.rows[0];
           const secondCommand = "UPDATE complaints set picture=$1 where id=$2;";

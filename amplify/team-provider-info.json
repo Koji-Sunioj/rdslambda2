@@ -15,12 +15,12 @@
       "function": {
         "rdslambda2": {
           "deploymentBucketName": "amplify-rdslambda-dev-145639-deployment",
-          "s3Key": "amplify-builds/rdslambda2-5165364c39444833636e-build.zip",
+          "s3Key": "amplify-builds/rdslambda2-674847554f5646456749-build.zip",
           "secretsPathAmplifyAppId": "d1rv33njy4xo7y"
         },
         "placesapi": {
           "deploymentBucketName": "amplify-rdslambda-dev-145639-deployment",
-          "s3Key": "amplify-builds/placesapi-7a426366386965786d45-build.zip"
+          "s3Key": "amplify-builds/placesapi-46766252766433785531-build.zip"
         }
       },
       "auth": {

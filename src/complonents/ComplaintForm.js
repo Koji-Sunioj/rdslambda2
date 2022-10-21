@@ -73,37 +73,37 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
       : picture.length > 0 &&
         Object.assign(options.body, await addPicture(picture[0]));
     console.log(options);
-    // if ("complaint" in options.body && "place" in options.body) {
-    //   try {
-    //     let toBeAltered, path;
-    //     switch (requestType) {
-    //       case "edit":
-    //         toBeAltered = await API.patch(
-    //           "rdslambda2",
-    //           `/complaints/${complaintId}`,
-    //           options
-    //         );
-    //         path = `/complaint/${complaintId}`;
-    //         break;
-    //       case "create":
-    //         toBeAltered = await API.post("rdslambda2", "/complaints/", options);
-    //         path = "/";
-    //         break;
-    //       default:
-    //         alert("missing action");
-    //     }
-    //     const {
-    //       request: { status },
-    //       data: { message },
-    //     } = toBeAltered;
-    //     alert(message);
-    //     status === 200 && setTimeout(navigate(path), 500);
-    //   } catch (error) {
-    //     alert(error);
-    //   }
-    // } else {
-    //   alert("complaint and location must be valid");
-    // }
+    if ("complaint" in options.body && "place" in options.body) {
+      try {
+        let toBeAltered, path;
+        switch (requestType) {
+          case "edit":
+            toBeAltered = await API.patch(
+              "rdslambda2",
+              `/complaints/${complaintId}`,
+              options
+            );
+            path = `/complaint/${complaintId}`;
+            break;
+          case "create":
+            toBeAltered = await API.post("rdslambda2", "/complaints/", options);
+            path = "/";
+            break;
+          default:
+            alert("missing action");
+        }
+        const {
+          request: { status },
+          data: { message },
+        } = toBeAltered;
+        alert(message);
+        status === 200 && setTimeout(navigate(path), 500);
+      } catch (error) {
+        alert(error);
+      }
+    } else {
+      alert("complaint and location must be valid");
+    }
   };
 
   const searchChange = (e) => {

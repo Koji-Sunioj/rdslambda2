@@ -1,6 +1,6 @@
 const { getSecret } = require("./utils/ssm");
 const { verifyToken } = require("./utils/token");
-const { successObject, rejectObject } = require("./utils/headers");
+const { successObject } = require("./utils/headers");
 const axios = require("axios");
 
 exports.handler = async (event) => {
@@ -28,11 +28,12 @@ exports.handler = async (event) => {
         }),
       };
     case "user point":
+      console.log("user point");
       const [lat, lng] = coords.split(",");
       places = await axios.get(
         endPoint + `${lng},${lat}.json?types=address&access_token=${mapboxKey}`
       );
-
+      console.log();
       return {
         ...successObject,
         body: JSON.stringify({
