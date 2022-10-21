@@ -42,6 +42,7 @@ const Complaint = () => {
           <h1>complaint number: {complaint.id}</h1>
           <p>{complaint.complaint}</p>
           <p>{complaint.user_email}</p>
+          <p>{complaint.place.address}</p>
           {complaint.picture && (
             <img
               style={{ display: "block" }}

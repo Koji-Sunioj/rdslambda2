@@ -14,6 +14,8 @@ const HomePage = () => {
     setComplaints(response);
   };
 
+  console.log(complaints);
+
   return (
     <>
       <h1>Current complaints</h1>
@@ -33,6 +35,7 @@ const HomePage = () => {
                 <p>{complaint.complaint}</p>
               </Link>
               <p>{complaint.user_email}</p>
+              <p>{complaint.place.address}</p>
               {complaint.picture && (
                 <img
                   src={`${complaint.picture}?${Date.now()}`}

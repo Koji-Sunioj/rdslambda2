@@ -28,7 +28,6 @@ exports.handler = async (event) => {
         }),
       };
     case "user point":
-      console.log("user point");
       const [lat, lng] = coords.split(",");
       places = await axios.get(
         endPoint + `${lng},${lat}.json?types=address&access_token=${mapboxKey}`

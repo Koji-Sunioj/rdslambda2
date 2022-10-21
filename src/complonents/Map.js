@@ -29,6 +29,7 @@ const Map = ({
             `/places?query=point&coords=${e.latlng.lat},${e.latlng.lng}`,
             options
           );
+          console.log(place);
           if ("place" in place.data) {
             const {
               data: {
