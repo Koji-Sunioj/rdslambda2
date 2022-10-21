@@ -1,6 +1,7 @@
 import { API } from "aws-amplify";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import { getOptions } from "../utils/options";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
 const Complaint = () => {
@@ -8,6 +9,7 @@ const Complaint = () => {
   const { complaintId } = useParams();
   const user = useSelector((state) => state.user);
   const [complaint, setComplaint] = useState(null);
+  const options = getOptions(user);
 
   useEffect(() => {
     getComplaint();
@@ -19,12 +21,6 @@ const Complaint = () => {
   };
 
   const deleteComplaint = async (complaintId) => {
-    const options = {
-      headers: {
-        Authorization: `Bearer ${user.jwt}`,
-      },
-      response: true,
-    };
     const toBeDeleted = await API.del(
       "rdslambda2",
       `/complaints/${complaintId}`,

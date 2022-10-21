@@ -16,7 +16,13 @@ const EditComplaint = () => {
     setComplaint(response);
   };
 
-  return <ComplantForm requestType={"edit"} response={complaint} />;
+  return (
+    <ComplantForm
+      requestType={"edit"}
+      response={complaint}
+      complaintId={complaintId}
+    />
+  );
 };
 
 export default EditComplaint;

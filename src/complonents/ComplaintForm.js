@@ -1,22 +1,29 @@
+import Map from "./Map";
 import { API } from "aws-amplify";
 import addPicture from "../utils/to64";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
+import { getOptions } from "../utils/options";
+import { useNavigate } from "react-router-dom";
 import { initialState } from "../app/reducers/userSlice";
-import { useNavigate, useParams } from "react-router-dom";
 
-import Map from "./Map";
-
-const ComplantForm = ({ requestType, response = null }) => {
+const ComplantForm = ({ requestType, response = null, complaintId }) => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
   const guestOrUser = user === initialState;
-  const { complaintId } = useParams();
   const [file, setFile] = useState("");
   const [checked, setChecked] = useState(false);
   const [preview, setPreview] = useState(null);
+
+  const [position, setPosition] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [search, setSearch] = useState("");
+  const [timer, setTimer] = useState(null);
+  const [dataList, setDataList] = useState([]);
+
   const [complaint, setComplaint] = useState("");
   const hasPicture = response !== null && response.picture !== null;
+  const options = getOptions(user);
 
   useEffect(() => {
     response !== null &&
@@ -32,20 +39,23 @@ const ComplantForm = ({ requestType, response = null }) => {
       currentTarget: {
         complaint: { value: complaint },
         picture: { files: picture },
+        location: { value: address },
       },
     } = event;
 
-    const options = {
-      headers: {
-        Authorization: `Bearer ${user.jwt}`,
-      },
-      response: true,
-      body: {},
-    };
     const getFile = /complaint_[0-9]{1,3}/g;
+    const place = dataList.find((item) => item.place_name === address.trim());
 
     complaint.length > 0 &&
       Object.assign(options.body, { complaint: complaint });
+    place &&
+      Object.assign(options.body, {
+        place: {
+          address: place.place_name,
+          lat: place.center[1],
+          lng: place.center[0],
+        },
+      });
     checked
       ? Object.assign(options.body, {
           removePhoto: response.picture.match(getFile)[0],
@@ -53,7 +63,8 @@ const ComplantForm = ({ requestType, response = null }) => {
       : picture.length > 0 &&
         Object.assign(options.body, await addPicture(picture[0]));
 
-    try {
+    console.log(options);
+    /* try {
       let toBeAltered, path;
       switch (requestType) {
         case "edit":
@@ -65,7 +76,7 @@ const ComplantForm = ({ requestType, response = null }) => {
           path = `/complaint/${complaintId}`;
           break;
         case "create":
-          console.log("something");
+         
           toBeAltered = await API.post("rdslambda2", "/complaints/", options);
           path = "/";
           break;
@@ -80,12 +91,56 @@ const ComplantForm = ({ requestType, response = null }) => {
       status === 200 && setTimeout(navigate(path), 500);
     } catch (error) {
       alert(error);
+    }*/
+  };
+
+  const searchChange = (e) => {
+    console.log(e);
+    const {
+      target: { value: searchInput },
+    } = e;
+    setSearch(searchInput);
+    const inputAction = "inputType" in e.nativeEvent ? "typed" : "selected";
+
+    switch (inputAction) {
+      case "typed": {
+        clearTimeout(timer);
+        const refined = searchInput.trim();
+        const shouldFetch = refined.length > 0 && refined !== search.trim();
+        const newTimer = setTimeout(() => {
+          shouldFetch &&
+            API.get(
+              "rdslambda2",
+              `/places?query=address&location=${refined}`,
+              options
+            ).then((response) => {
+              setDataList(response.data.places);
+            });
+        }, 1000);
+        setTimer(newTimer);
+        break;
+      }
+      case "selected": {
+        searchInput.length > 0 &&
+          (() => {
+            const place = dataList.find(
+              (item) => item.place_name === searchInput.trim()
+            );
+            setPosition({ lat: place.center[1], lng: place.center[0] });
+            setLocation(place.place_name);
+          })();
+        // : (() => {
+        //     setPosition(null);
+        //     setLocation(null);
+        //   })();
+      }
     }
   };
 
   return (
     <>
       <form
+        type="submit"
         encType="multipart/form-data"
         className="login"
         onSubmit={(e) => {
@@ -103,7 +158,30 @@ const ComplantForm = ({ requestType, response = null }) => {
             value={complaint}
           />
         </div>
-
+        <div>
+          <label htmlFor="location">location: </label>
+          <input
+            type="search"
+            name="location"
+            autoComplete="off"
+            value={search}
+            onChange={searchChange}
+            list="places"
+          />
+          <datalist id="places">
+            {dataList.map((place) => (
+              <option value={place.place_name} key={place.id} />
+            ))}
+          </datalist>
+        </div>
+        <Map
+          location={location}
+          position={position}
+          setLocation={setLocation}
+          setPosition={setPosition}
+          setSearch={setSearch}
+          setDataList={setDataList}
+        />
         {hasPicture && (
           <div>
             <label htmlFor="removePhoto">no photo </label>
@@ -172,48 +250,26 @@ const ComplantForm = ({ requestType, response = null }) => {
             </figure>
           )}
         </fieldset>
+        <button type="submit">Go</button>
       </form>
       {!guestOrUser && (
         <button
           onClick={() => {
+            setFile("");
             response === null
               ? (() => {
                   setComplaint("");
                   setPreview(null);
-                  setFile("");
                 })()
               : (() => {
                   setComplaint(response.complaint);
                   setPreview(response.picture);
-                  setFile("");
                 })();
           }}
         >
           Revert changes
         </button>
       )}
-      <div>
-        <Map />
-        <button
-          onClick={async () => {
-            const init = {
-              headers: {
-                Authorization: `Bearer ${user.jwt}`,
-              },
-              response: true,
-            };
-            console.log(user.jwt);
-            const place = await API.get(
-              "rdslambda2",
-              "/places?query=point&coords=60.413837,25.10294",
-              init
-            );
-            console.log(place);
-          }}
-        >
-          test
-        </button>
-      </div>
     </>
   );
 };
