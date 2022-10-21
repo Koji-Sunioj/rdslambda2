@@ -22,7 +22,10 @@ exports.handler = async (event) => {
       );
       return {
         ...successObject,
-        body: JSON.stringify({ message: "success", ...places.data.features }),
+        body: JSON.stringify({
+          message: "success",
+          places: places.data.features,
+        }),
       };
     case "user point":
       console.log("user point");
@@ -30,15 +33,15 @@ exports.handler = async (event) => {
       places = await axios.get(
         endPoint + `${lng},${lat}.json?types=address&access_token=${mapboxKey}`
       );
+
       return {
         ...successObject,
         body: JSON.stringify({
           message: "success",
-          ...places.data.features[0],
+          place: places.data.features[0],
         }),
       };
-    //case "guest point" || "guest address":
-    //  return rejectObject
+
     default:
       return {
         ...successObject,
