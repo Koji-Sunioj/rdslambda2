@@ -1,4 +1,4 @@
-import ComplaintMap from "./ComplaintMap";
+import PointPicker from "./PointPicker";
 import { API } from "aws-amplify";
 import addPicture from "../utils/to64";
 import { useSelector } from "react-redux";
@@ -141,7 +141,7 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
           })();
       }
       default:
-        alert("nothing");
+        break;
     }
   };
 
@@ -182,7 +182,7 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
             ))}
           </datalist>
         </div>
-        <ComplaintMap
+        <PointPicker
           location={location}
           position={position}
           setLocation={setLocation}

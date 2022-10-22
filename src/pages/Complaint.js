@@ -1,6 +1,8 @@
 import { API } from "aws-amplify";
+import Map from "../complonents/Map";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import { Marker, Popup } from "react-leaflet";
 import { getOptions } from "../utils/options";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
@@ -14,6 +16,8 @@ const Complaint = () => {
   useEffect(() => {
     getComplaint();
   }, []);
+
+  const initPosition = { lat: 60.25, lng: 24.94 };
 
   const getComplaint = async () => {
     const response = await API.get("rdslambda2", `/complaints/${complaintId}`);
@@ -44,13 +48,29 @@ const Complaint = () => {
           <p>{complaint.user_email}</p>
           <p>{complaint.place.address}</p>
           {complaint.picture && (
-            <img
-              style={{ display: "block" }}
-              key={Date.now()}
-              src={`${complaint.picture}?${Date.now()}`}
-              alt={complaint.complaint}
-            />
+            <>
+              <img
+                style={{ display: "block" }}
+                key={Date.now()}
+                src={`${complaint.picture}?${Date.now()}`}
+                alt={complaint.complaint}
+              />
+              <br />
+            </>
           )}
+
+          <Map
+            zoom={15}
+            initPosition={{
+              lat: complaint.place.lat,
+              lng: complaint.place.lng,
+            }}
+          >
+            <Marker
+              position={{ lat: complaint.place.lat, lng: complaint.place.lng }}
+              key={complaint.id}
+            ></Marker>
+          </Map>
 
           {user !== null && user.id === complaint.user_email && (
             <div style={{ paddingTop: "20px" }}>

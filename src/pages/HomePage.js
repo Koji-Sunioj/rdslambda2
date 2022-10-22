@@ -13,6 +13,7 @@ const HomePage = () => {
 
   const getAllComplaints = async () => {
     const response = await API.get("rdslambda2", "/complaints");
+    console.log("endpoint hit");
     setComplaints(response);
   };
 

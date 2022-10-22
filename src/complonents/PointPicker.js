@@ -5,7 +5,7 @@ import { getOptions } from "../utils/options";
 
 import Map from "./Map";
 
-const ComplaintMap = ({
+const PointPicker = ({
   position,
   location,
   setLocation,
@@ -55,4 +55,4 @@ const ComplaintMap = ({
   );
 };
 
-export default ComplaintMap;
+export default PointPicker;

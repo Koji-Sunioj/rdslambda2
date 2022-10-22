@@ -1,10 +1,10 @@
 import { MapContainer, TileLayer } from "react-leaflet";
 
-const Map = ({ children, initPosition }) => {
+const Map = ({ children, initPosition, zoom = 10 }) => {
   return (
     <MapContainer
       center={initPosition}
-      zoom={10}
+      zoom={zoom}
       id="map"
       maxBounds={[
         [59.846373196, 20.6455928891],
