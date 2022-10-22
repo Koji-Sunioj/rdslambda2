@@ -1,7 +1,8 @@
 import { API } from "aws-amplify";
-import { Link } from "react-router-dom";
+import Map from "../complonents/Map";
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { complaintInfo } from "../complonents/ComplaintInfo";
+import { Marker, Popup } from "react-leaflet";
 const HomePage = () => {
   const [complaints, setComplaints] = useState(null);
   const [view, setView] = useState("list");
@@ -20,7 +21,6 @@ const HomePage = () => {
   };
 
   const initPosition = { lat: 60.25, lng: 24.94 };
-  console.log(complaints);
 
   return (
     <>
@@ -31,7 +31,10 @@ const HomePage = () => {
           justifyContent: "space-between",
         }}
       >
-        <h1>Current complaints</h1>
+        <h1>
+          Current complaints{" "}
+          {complaints !== null && ` (${complaints.length} total)`}
+        </h1>
         <div
           style={{
             display: "flex",
@@ -70,55 +73,21 @@ const HomePage = () => {
                 animation: `fadeIn ${value / 4}s`,
               }}
             >
-              <Link to={`complaint/${complaint.id}`}>
-                <p>{complaint.complaint}</p>
-              </Link>
-              <p>{complaint.user_email}</p>
-              <p>{complaint.place.address}</p>
-              {complaint.picture && (
-                <img
-                  src={`${complaint.picture}?${Date.now()}`}
-                  alt={complaint.complaint}
-                />
-              )}
+              {complaintInfo(complaint)}
             </div>
           );
         })
       ) : (
-        <MapContainer
-          center={initPosition}
-          zoom={10}
-          id="map"
-          maxBounds={[
-            [59.846373196, 20.6455928891],
-            [70.1641930203, 31.5160921567],
-          ]}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+        <Map initPosition={initPosition}>
           {complaints.map((complaint) => (
             <Marker
               position={{ lat: complaint.place.lat, lng: complaint.place.lng }}
               key={complaint.id}
             >
-              <Popup className="popup">
-                <Link to={`complaint/${complaint.id}`}>
-                  <h2>{complaint.complaint}</h2>
-                </Link>
-                <p>{complaint.user_email}</p>
-                <p>{complaint.place.address}</p>
-                {complaint.picture && (
-                  <img
-                    src={`${complaint.picture}?${Date.now()}`}
-                    alt={complaint.complaint}
-                  />
-                )}
-              </Popup>
+              <Popup className="popup">{complaintInfo(complaint)}</Popup>
             </Marker>
           ))}
-        </MapContainer>
+        </Map>
       )}
     </>
   );

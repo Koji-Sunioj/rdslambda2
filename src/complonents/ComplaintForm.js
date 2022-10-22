@@ -1,4 +1,4 @@
-import Map from "./Map";
+import ComplaintMap from "./ComplaintMap";
 import { API } from "aws-amplify";
 import addPicture from "../utils/to64";
 import { useSelector } from "react-redux";
@@ -139,11 +139,9 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
             setPosition({ lat: place.center[1], lng: place.center[0] });
             setLocation(place.place_name);
           })();
-        // : (() => {
-        //     setPosition(null);
-        //     setLocation(null);
-        //   })();
       }
+      default:
+        alert("nothing");
     }
   };
 
@@ -184,7 +182,7 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
             ))}
           </datalist>
         </div>
-        <Map
+        <ComplaintMap
           location={location}
           position={position}
           setLocation={setLocation}
@@ -268,7 +266,10 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
             setFile("");
             response === null
               ? (() => {
+                  setPosition(null);
+                  setLocation(null);
                   setComplaint("");
+                  setSearch("");
                   setPreview(null);
                 })()
               : resetFromResp(response);
