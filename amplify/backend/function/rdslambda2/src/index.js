@@ -19,8 +19,7 @@ exports.handler = async (event) => {
 
   const { httpMethod, resource, pathParameters, headers } = event;
   const routeKey = `${httpMethod} ${resource}`;
-  let query, command, values, requester, user_email, type, isSameUser;
-  console.log(event);
+  let query, command, values, requester, user_email, type;
 
   switch (routeKey) {
     case "GET /complaints":
@@ -95,11 +94,17 @@ exports.handler = async (event) => {
       switch (requester) {
         case "user same":
           const client = await pool.connect();
-          const { complaint, file, removePhoto } = JSON.parse(event.body);
+          const { complaint, file, place, removePhoto } = JSON.parse(
+            event.body
+          );
           await client.query("BEGIN");
           command =
-            "UPDATE complaints set complaint=$1 where id=$2 RETURNING *;";
-          query = await client.query(command, [complaint, pathParameters.id]);
+            "UPDATE complaints set complaint=$1,place=$2 where id=$3 RETURNING *;";
+          query = await client.query(command, [
+            complaint,
+            JSON.stringify(place),
+            pathParameters.id,
+          ]);
           if (removePhoto) {
             await removeS3(removePhoto, bucket);
             command = "UPDATE complaints set picture = null where id = $1;";

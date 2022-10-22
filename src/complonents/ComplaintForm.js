@@ -26,22 +26,23 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
   const options = getOptions(user);
 
   useEffect(() => {
-    response !== null &&
-      (() => {
-        setComplaint(response.complaint);
-        response.picture !== null && setPreview(response.picture);
-        setPosition({ lat: response.place.lat, lng: response.place.lng });
-        setSearch(response.place.address);
-        setLocation(response.place.address);
-        setDataList([
-          {
-            place_name: response.place.address,
-            id: 1,
-            center: [response.place.lng, response.place.lat],
-          },
-        ]);
-      })();
+    response !== null && resetFromResp(response);
   }, [response]);
+
+  const resetFromResp = (response) => {
+    setComplaint(response.complaint);
+    setPreview(response.picture);
+    setPosition({ lat: response.place.lat, lng: response.place.lng });
+    setSearch(response.place.address);
+    setLocation(response.place.address);
+    setDataList([
+      {
+        place_name: response.place.address,
+        id: 1,
+        center: [response.place.lng, response.place.lat],
+      },
+    ]);
+  };
 
   const sendPost = async (event) => {
     event.preventDefault();
@@ -72,42 +73,39 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
         })
       : picture.length > 0 &&
         Object.assign(options.body, await addPicture(picture[0]));
-    console.log(options);
-    if ("complaint" in options.body && "place" in options.body) {
-      try {
-        let toBeAltered, path;
-        switch (requestType) {
-          case "edit":
-            toBeAltered = await API.patch(
-              "rdslambda2",
-              `/complaints/${complaintId}`,
-              options
-            );
-            path = `/complaint/${complaintId}`;
-            break;
-          case "create":
-            toBeAltered = await API.post("rdslambda2", "/complaints/", options);
-            path = "/";
-            break;
-          default:
-            alert("missing action");
-        }
-        const {
-          request: { status },
-          data: { message },
-        } = toBeAltered;
-        alert(message);
-        status === 200 && setTimeout(navigate(path), 500);
-      } catch (error) {
-        alert(error);
+
+    try {
+      if (!("complaint" in options.body) && !("place" in options.body))
+        throw new Error("complaint and location must be valid");
+      let toBeAltered, path;
+      switch (requestType) {
+        case "edit":
+          toBeAltered = await API.patch(
+            "rdslambda2",
+            `/complaints/${complaintId}`,
+            options
+          );
+          path = `/complaint/${complaintId}`;
+          break;
+        case "create":
+          toBeAltered = await API.post("rdslambda2", "/complaints/", options);
+          path = "/";
+          break;
+        default:
+          alert("missing action");
       }
-    } else {
-      alert("complaint and location must be valid");
+      const {
+        request: { status },
+        data: { message },
+      } = toBeAltered;
+      alert(message);
+      status === 200 && setTimeout(navigate(path), 500);
+    } catch (error) {
+      alert(error);
     }
   };
 
   const searchChange = (e) => {
-    console.log(e);
     const {
       target: { value: searchInput },
     } = e;
@@ -273,10 +271,7 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
                   setComplaint("");
                   setPreview(null);
                 })()
-              : (() => {
-                  setComplaint(response.complaint);
-                  setPreview(response.picture);
-                })();
+              : resetFromResp(response);
           }}
         >
           Revert changes
@@ -287,18 +282,3 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
 };
 
 export default ComplantForm;
-
-/*
-  <div>
-          <label htmlFor="location">location: </label>
-          <input type="search" name="location" />
-        </div>
- <div>
-          <label htmlFor="location">location: </label>
-          <input type="search" name="location" />
-        </div>
-        <div>
-          <div>
-            <Map />
-          </div>
-        </div>*/

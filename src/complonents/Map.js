@@ -29,24 +29,18 @@ const Map = ({
             `/places?query=point&coords=${e.latlng.lat},${e.latlng.lng}`,
             options
           );
-          console.log(place);
-          if ("place" in place.data) {
-            const {
-              data: {
-                place: { place_name },
-                place: fetchedPlace,
-              },
-            } = place;
-            console.log(fetchedPlace);
-            setSearch(place_name);
-            setLocation(place_name);
-            setPosition(e.latlng);
-            setDataList([fetchedPlace]);
-          } else {
-            alert("nothing");
-          }
+          const {
+            data: {
+              place: { place_name },
+              place: fetchedPlace,
+            },
+          } = place;
+          setSearch(place_name);
+          setLocation(place_name);
+          setPosition(e.latlng);
+          setDataList([fetchedPlace]);
         } catch (e) {
-          console.log(e);
+          alert("no address found");
         }
       },
     });
