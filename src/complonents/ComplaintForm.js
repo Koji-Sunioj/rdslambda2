@@ -1,6 +1,6 @@
-import PointPicker from "./PointPicker";
 import { API } from "aws-amplify";
 import addPicture from "../utils/to64";
+import PointPicker from "./PointPicker";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { getOptions } from "../utils/options";
@@ -139,6 +139,7 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
             setPosition({ lat: place.center[1], lng: place.center[0] });
             setLocation(place.place_name);
           })();
+        break;
       }
       default:
         break;

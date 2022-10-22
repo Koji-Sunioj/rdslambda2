@@ -1,9 +1,8 @@
-import { useMapEvents, Marker, Popup } from "react-leaflet";
+import Map from "./Map";
 import { API } from "aws-amplify";
 import { useSelector } from "react-redux";
 import { getOptions } from "../utils/options";
-
-import Map from "./Map";
+import { useMapEvents, Marker, Popup } from "react-leaflet";
 
 const PointPicker = ({
   position,

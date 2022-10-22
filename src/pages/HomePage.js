@@ -1,8 +1,9 @@
 import { API } from "aws-amplify";
 import Map from "../complonents/Map";
 import { useEffect, useState } from "react";
-import { complaintInfo } from "../complonents/ComplaintInfo";
 import { Marker, Popup } from "react-leaflet";
+import { complaintInfo } from "../complonents/ComplaintInfo";
+
 const HomePage = () => {
   const [complaints, setComplaints] = useState(null);
   const [view, setView] = useState("list");

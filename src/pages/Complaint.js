@@ -1,8 +1,8 @@
 import { API } from "aws-amplify";
 import Map from "../complonents/Map";
+import { Marker } from "react-leaflet";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { Marker, Popup } from "react-leaflet";
 import { getOptions } from "../utils/options";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
@@ -16,8 +16,6 @@ const Complaint = () => {
   useEffect(() => {
     getComplaint();
   }, []);
-
-  const initPosition = { lat: 60.25, lng: 24.94 };
 
   const getComplaint = async () => {
     const response = await API.get("rdslambda2", `/complaints/${complaintId}`);
