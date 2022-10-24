@@ -21,11 +21,21 @@ const Pages = () => {
 
   const getUser = async () => {
     try {
-      const user = await Auth.currentAuthenticatedUser();
+      const {
+        signInUserSession: {
+          idToken: {
+            jwtToken,
+            payload: { exp },
+          },
+        },
+        attributes: { email },
+      } = await Auth.currentAuthenticatedUser();
+
       dispatch(
         setTheUser({
-          jwt: user.signInUserSession.idToken.jwtToken,
-          id: user.attributes.email,
+          jwt: jwtToken,
+          id: email,
+          exp: exp,
         })
       );
     } catch (error) {

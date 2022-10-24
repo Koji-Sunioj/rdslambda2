@@ -1,13 +1,37 @@
+import moment from "moment";
 import { Auth } from "aws-amplify";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { unSetUser } from "../app/reducers/userSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { initialState } from "../app/reducers/userSlice";
 
-const NavBar = ({ logOut }) => {
+const NavBar = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [time, setTime] = useState("");
   const user = useSelector((state) => state.user);
   const guestOrUser = user === initialState;
+
+  useEffect(() => {
+    if (user.exp !== null) {
+      const intervalId = setInterval(() => {
+        setTime(moment().format("HH:mm:ss"));
+      }, 1000);
+
+      const expiration = new Date(user.exp * 1000);
+      const current = new Date();
+      current > expiration && logOut();
+
+      return () => clearInterval(intervalId);
+    }
+  }, [time, user.exp]);
+
+  const logOut = () => {
+    Auth.signOut();
+    dispatch(unSetUser());
+    navigate("/");
+  };
 
   return (
     <div className="nav">
@@ -31,8 +55,7 @@ const NavBar = ({ logOut }) => {
         ) : (
           <button
             onClick={() => {
-              Auth.signOut();
-              dispatch(unSetUser());
+              logOut();
             }}
           >
             Log Out

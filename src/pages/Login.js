@@ -16,6 +16,7 @@ const Login = () => {
         setTheUser({
           jwt: user.signInUserSession.idToken.jwtToken,
           id: user.attributes.email,
+          exp: user.signInUserSession.idToken.payload.exp,
         })
       );
       navigate("/");
