@@ -1,31 +1,68 @@
 notes
 -----
-full stack with amplify and lambda as proxy for server
-------------------------------------------------------
 1. create react app as normal
 2. amplify init
 3. npm install aws-amplify @aws-amplify/ui-react
-4. amplify init
+4. amplify init 
 5. amplify add api -> choose rest api with lambda, path is complaints/{id}
-        * make sure it's public for the client
+	* make sure it's public for the client
 6. go to the folder of the lambda function -> npm install pg
 7. amplify push
 8. edit api gateway : add two methods under complaints/ for get and post, then three under complaints/{id} for get, patch and delete.
-        * make sure lambda integration is checked for each method, add lambda function name from init and save. then deploy
-        * might be useful to enable cors on all methods
+	* make sure lambda integration is checked for each method, add lambda function name from init and save. then deploy
+	* might be useful to enable cors on all methods
 9. edit the lambda function : import pg, add hostname, password and eveything
-        * amplify bootstraps the lambda with its own role. make sure to add AmazonRDSFullAccess to the exection role AWSLambdaVPCAccessExecutionRole
-        * add the same vpc of the rds instance to the vpc. make sure that custom tcp 5432 is shown in inbound and outbound rules
-        * cors errors are caused by the lambda function not returning proper header. can set the header in the response object in the lambda function.
+	* amplify bootstraps the lambda with its own role. make sure to add AmazonRDSFullAccess to the exection role AWSLambdaVPCAccessExecutionRole
+	* add the same vpc of the rds instance to the vpc. make sure that custom tcp 5432 is shown in inbound and outbound rules
+	* cors errors are caused by the lambda function not returning proper header. can set the header in the response object in the lambda function.
+
+10. npm install @aws-sdk/client-secrets-manager in the lambda director10. npm install @aws-sdk/client-secrets-manager in the lambda directory
+11. add execution role to lambda for secrets manager
 
 note: the changes in the cloud for api gateway and lambda security groups, execution roles are not overridden when you add code to the lambda function
-note 3.10 : lambda must be configured with a nat gateway to access ssm since its deployed in vpc. when i remove the vpc it still works okay, as well as ssm
-note: had to delete the options method and recreate it with lambda integration for it to work 
+note: secrets manager could not be accessed when lambda was in vpc. vpc removed and rds accessing still works
+note: had to remove the options method and recreate it with lambda integration for it to work
 
-10. npm install @aws-sdk/client-secrets-manager
-11. add the code for retrieving the secret in the function as needed 
 12. npm install react-router-dom : installs v6.4.1
+13. npm install aws-jwt-verify
 
+note: pool id is the last part of the url in iss field. aud is the client id, and use is whats denoted in token_use: https://jwt.io/#debugger-io
+
+14. to get blob from image url, must fetch it. enable cors in s3, since browser sets origin in header when fetching: 
+15. added path called "places" via amplify update api:
+	a. added lambda integration for get and options
+	b. installed aws-jwt-verify and @aws-sdk/client-secrets-manager in the function src, pushed it. 
+	c. added same ssm.js and token.js files to utils folder
+	d. added mapBoxKey in secrets manager
+	e. added SecretsManagerReadWrite in execution role for lambda
+	f. install npm-fetch in lambda since native .fetch not available
+
+16. added json column: ALTER TABLE complaints ADD COLUMN place json;
+
+
+note: if lambda is used both for integration type, and lambda proxy integration, with the named function in the input field, then the options method in pre-flight actually hits the lambda function with the OPTIONS method in httpMethod
+
+[
+    {
+        "AllowedHeaders": [
+            "Access-Control-Allow-Origin",
+            "Access-Control-Request-Headers"
+        ],
+        "AllowedMethods": [
+            "GET",
+            "HEAD"
+        ],
+        "AllowedOrigins": [
+            "*"
+        ],
+        "ExposeHeaders": [
+            "Access-Control-Allow-Origin"
+        ]
+    }
+]
+
+14. add user email column
+15. added another path for an api to handle lambda interaction with mapbox. it overrode all the previous methods i created in api gateway
 
 
 # Getting Started with Create React App

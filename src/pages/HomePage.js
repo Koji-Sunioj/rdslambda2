@@ -1,22 +1,24 @@
-import { API } from "aws-amplify";
 import Map from "../complonents/Map";
 import { useEffect, useState } from "react";
+import RadioToggle from "../complonents/RadioToggle";
 import { Marker, Popup } from "react-leaflet";
 import { complaintInfo } from "../complonents/ComplaintInfo";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchComplaints } from "../app/reducers/complaintSlice";
+import { initialState as something } from "../app/reducers/complaintSlice";
+import { ComplaintSkeleton } from "../complonents/ComplaintSkeleton";
 
 const HomePage = () => {
-  const [complaints, setComplaints] = useState(null);
+  const dispatch = useDispatch();
+  const complaints = useSelector((state) => state.complaintsPage);
+  const { data, error, loading } = complaints;
+  const [page, setPage] = useState(1);
   const [view, setView] = useState("list");
 
   useEffect(() => {
-    getAllComplaints();
-  }, []);
-
-  const getAllComplaints = async () => {
-    const response = await API.get("rdslambda2", "/complaints");
-    console.log("endpoint hit");
-    setComplaints(response);
-  };
+    complaints === something && dispatch(fetchComplaints());
+    window.scrollTo(0, 0);
+  }, [page]);
 
   const radioChange = (e) => {
     setView(e.currentTarget.value);
@@ -24,64 +26,86 @@ const HomePage = () => {
 
   const initPosition = { lat: 60.25, lng: 24.94 };
 
+  let filter = [];
+  let pages = [];
+
+  data !== null &&
+    (() => {
+      filter.push(...data.slice(page * 5 - 5, page * 5));
+      for (let i = 1; i <= Math.ceil(data.length / 5); i++) {
+        pages.push(i);
+      }
+    })();
+
   return (
-    <>
+    <div id="show">
       <div
         style={{
           display: "flex",
-          flexDirection: "row",
+          fledDirection: "row",
           justifyContent: "space-between",
         }}
       >
         <h1>
-          Current complaints{" "}
-          {complaints !== null && ` (${complaints.length} total)`}
+          Current complaints
+          {data !== null && ` (${data.length} total)`}
+          {loading && ` (loading)`}
         </h1>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <label htmlFor="listView">list</label>
-          <input
-            type="radio"
-            name="view"
-            value="list"
-            checked={view === "list"}
-            id="listView"
-            onChange={radioChange}
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <RadioToggle
+            identifier={"list"}
+            radioChange={radioChange}
+            loading={loading}
           />
-          <label htmlFor="mapView">map</label>
-          <input
-            type="radio"
-            name="view"
-            value="map"
-            id="mapView"
-            onChange={radioChange}
+          <RadioToggle
+            identifier={"map"}
+            radioChange={radioChange}
+            loading={loading}
           />
         </div>
       </div>
-      {view === "list" ? (
-        complaints !== null &&
-        complaints.map((complaint, n) => {
+      {loading &&
+        [0, 1, 2, 3, 4].map((skeleton, n) => {
           let value = (n += 1);
           return (
             <div
-              key={complaint.id}
+              className="skeleton"
+              key={skeleton}
               style={{
-                border: "1px solid #ccc",
-                padding: "20px",
                 animation: `fadeIn ${value / 4}s`,
               }}
             >
-              {complaintInfo(complaint)}
+              <ComplaintSkeleton />
             </div>
           );
-        })
+        })}
+      {view === "list" ? (
+        filter.length > 0 && (
+          <div>
+            {filter.map((complaint) => {
+              return (
+                <div key={complaint.id} className="complaint">
+                  {complaintInfo(complaint)}
+                </div>
+              );
+            })}
+            <br />
+            {pages.map((num) => (
+              <button
+                key={num}
+                disabled={page === num}
+                onClick={() => {
+                  setPage(num);
+                }}
+              >
+                {num}
+              </button>
+            ))}
+          </div>
+        )
       ) : (
-        <Map initPosition={initPosition}>
-          {complaints.map((complaint) => (
+        <Map initPosition={initPosition} type={"multipoint-map"}>
+          {data.map((complaint) => (
             <Marker
               position={{ lat: complaint.place.lat, lng: complaint.place.lng }}
               key={complaint.id}
@@ -91,7 +115,7 @@ const HomePage = () => {
           ))}
         </Map>
       )}
-    </>
+    </div>
   );
 };
 

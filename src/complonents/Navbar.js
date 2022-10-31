@@ -13,6 +13,12 @@ const NavBar = () => {
   const user = useSelector((state) => state.user);
   const guestOrUser = user === initialState;
 
+  const logOut = () => {
+    Auth.signOut();
+    dispatch(unSetUser());
+    navigate("/");
+  };
+
   useEffect(() => {
     if (user.exp !== null) {
       const intervalId = setInterval(() => {
@@ -26,12 +32,6 @@ const NavBar = () => {
       return () => clearInterval(intervalId);
     }
   }, [time, user.exp]);
-
-  const logOut = () => {
-    Auth.signOut();
-    dispatch(unSetUser());
-    navigate("/");
-  };
 
   return (
     <div className="nav">

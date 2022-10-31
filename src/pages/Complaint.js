@@ -58,6 +58,7 @@ const Complaint = () => {
           )}
 
           <Map
+            type={"onepoint-map"}
             zoom={15}
             initPosition={{
               lat: complaint.place.lat,
@@ -71,7 +72,7 @@ const Complaint = () => {
           </Map>
 
           {user !== null && user.id === complaint.user_email && (
-            <div style={{ paddingTop: "20px" }}>
+            <div className="flex space-x-60 py-5">
               <button
                 onClick={() => {
                   deleteComplaint(complaint.id);
@@ -79,14 +80,14 @@ const Complaint = () => {
               >
                 Delete
               </button>
-              <button>
+              <button className="bg-white">
                 <Link
+                  to={`/edit-complaint/${complaint.id}`}
                   style={{
                     textDecoration: "none",
                     color: "black",
                     cursor: "default",
                   }}
-                  to={`/edit-complaint/${complaint.id}`}
                 >
                   Edit
                 </Link>

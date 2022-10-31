@@ -16,6 +16,7 @@ const PointPicker = ({
   const initPosition = { lat: 60.25, lng: 24.94 };
   const options = getOptions(user);
   const LocationMarker = () => {
+    console.log("map fired");
     const map = useMapEvents({
       click: async (e) => {
         try {
@@ -30,6 +31,7 @@ const PointPicker = ({
               place: fetchedPlace,
             },
           } = place;
+
           setSearch(place_name);
           setLocation(place_name);
           setPosition(e.latlng);
@@ -48,7 +50,7 @@ const PointPicker = ({
     );
   };
   return (
-    <Map initPosition={initPosition}>
+    <Map initPosition={initPosition} type={"onepoint-map"}>
       <LocationMarker />
     </Map>
   );

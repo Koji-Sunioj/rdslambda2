@@ -105,6 +105,8 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
     }
   };
 
+  console.log(dataList);
+
   const searchChange = (e) => {
     const {
       target: { value: searchInput },

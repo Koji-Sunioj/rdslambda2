@@ -1,13 +1,16 @@
+
 .nav {
   display: flex;
   flex-direction: row;
 }
+
 
 .child {
   flex-grow: 1;
   flex-basis: 0;
   border: 1px solid #ccc;
   display: flex;
+  padding: 10px;
   align-items: center;
   justify-content: center;
 }
@@ -36,6 +39,7 @@ animation: fadeIn 1s;
   padding-bottom: 10px ;
   padding-top: 10px;
   width: 50vw;
+  
 }
 
 
@@ -50,9 +54,19 @@ animation: fadeIn 1s;
   height: 500px;
 }
 
+#onepoint-map {
+  width: 100%;
+  height: 500px;
+}
+
+#multipoint-map {
+  width: 100%;
+  height: 750px;
+}
+
+
+
 .popup p { margin-top: 5px; }
-
-
 
 img {
   max-width: 100%;
@@ -62,4 +76,19 @@ img {
 .leaflet-popup-content-wrapper {
   max-height: 20rem;
   overflow-y:scroll;
+}
+
+.skeleton  {
+  border: 1px solid #ccc;
+  padding: 20px;
+}
+
+.skeleton p {
+  background-color: #ccc;
+  width: 20%;
+}
+
+.complaint {
+  border: 1px solid #ccc;
+  padding: 20px;
 }

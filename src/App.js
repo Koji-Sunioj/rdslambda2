@@ -1,7 +1,11 @@
 import Pages from "./Pages";
 
 function App() {
-  return <Pages />;
+  return (
+    <div>
+      <Pages />
+    </div>
+  );
 }
 
 export default App;
