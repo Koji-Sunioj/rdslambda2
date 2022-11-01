@@ -1,7 +1,8 @@
 export const ComplaintSkeleton = () => {
   return (
     <>
-      <p style={{ margin: "0px" }}> &nbsp;</p>
+      <h1>&nbsp;</h1>
+      <p>&nbsp;</p>
       <p>&nbsp;</p>
       <p>&nbsp;</p>
     </>

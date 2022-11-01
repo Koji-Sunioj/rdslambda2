@@ -50,7 +50,7 @@ const PointPicker = ({
     );
   };
   return (
-    <Map initPosition={initPosition} type={"onepoint-map"}>
+    <Map type={"onepoint-map"}>
       <LocationMarker />
     </Map>
   );

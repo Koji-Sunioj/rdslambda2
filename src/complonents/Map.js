@@ -1,6 +1,11 @@
 import { MapContainer, TileLayer } from "react-leaflet";
 
-const Map = ({ children, initPosition, zoom = 10, type }) => {
+const Map = ({
+  children,
+  initPosition = { lat: 60.25, lng: 24.94 },
+  zoom = 10,
+  type,
+}) => {
   return (
     <MapContainer
       center={initPosition}

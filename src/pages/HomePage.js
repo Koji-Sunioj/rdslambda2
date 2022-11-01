@@ -4,27 +4,26 @@ import RadioToggle from "../complonents/RadioToggle";
 import { Marker, Popup } from "react-leaflet";
 import { complaintInfo } from "../complonents/ComplaintInfo";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchComplaints } from "../app/reducers/complaintSlice";
-import { initialState as something } from "../app/reducers/complaintSlice";
-import { ComplaintSkeleton } from "../complonents/ComplaintSkeleton";
+import { fetchComplaints } from "../app/reducers/complaintsHome";
+import { initialState as complaintsInit } from "../app/reducers/complaintsHome";
+import { ComplaintsSkeleton } from "../complonents/ComplaintsSkeleton";
 
 const HomePage = () => {
   const dispatch = useDispatch();
   const complaints = useSelector((state) => state.complaintsPage);
+
   const { data, error, loading } = complaints;
   const [page, setPage] = useState(1);
   const [view, setView] = useState("list");
 
   useEffect(() => {
-    complaints === something && dispatch(fetchComplaints());
+    complaints === complaintsInit && dispatch(fetchComplaints());
     window.scrollTo(0, 0);
   }, [page]);
 
   const radioChange = (e) => {
     setView(e.currentTarget.value);
   };
-
-  const initPosition = { lat: 60.25, lng: 24.94 };
 
   let filter = [];
   let pages = [];
@@ -64,6 +63,11 @@ const HomePage = () => {
           />
         </div>
       </div>
+      {error && (
+        <div style={{ textAlign: "center" }}>
+          <h2>Error in fetch</h2>
+        </div>
+      )}
       {loading &&
         [0, 1, 2, 3, 4].map((skeleton, n) => {
           let value = (n += 1);
@@ -75,7 +79,7 @@ const HomePage = () => {
                 animation: `fadeIn ${value / 4}s`,
               }}
             >
-              <ComplaintSkeleton />
+              <ComplaintsSkeleton />
             </div>
           );
         })}
@@ -104,7 +108,7 @@ const HomePage = () => {
           </div>
         )
       ) : (
-        <Map initPosition={initPosition} type={"multipoint-map"}>
+        <Map type={"multipoint-map"}>
           {data.map((complaint) => (
             <Marker
               position={{ lat: complaint.place.lat, lng: complaint.place.lng }}

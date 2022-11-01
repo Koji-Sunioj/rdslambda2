@@ -83,9 +83,18 @@ img {
   padding: 20px;
 }
 
-.skeleton p {
+.skeleton > p ,.skeleton h1 {
   background-color: #ccc;
   width: 20%;
+}
+
+.single-skeleton > p ,.single-skeleton h1 {
+  background-color: #ccc;
+  width: 20%;
+}
+
+.single-skeleton {
+  animation: fadeIn 1s;
 }
 
 .complaint {
