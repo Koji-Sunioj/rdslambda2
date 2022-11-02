@@ -3,6 +3,7 @@ import { Marker } from "react-leaflet";
 import { SVGOverlay } from "react-leaflet";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { getOptions } from "../utils/options";
 import { purgeDeleted } from "../app/reducers/complaintsHome";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ComplaintSkeleton } from "../complonents/ComplaintSkeleton";
@@ -10,11 +11,11 @@ import { initialState as complaintInit } from "../app/reducers/complaintView";
 import { fetchComplaint, deleteComplaint } from "../app/reducers/complaintView";
 
 const Complaint = () => {
-  const [isDeleted, setDeleted] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { complaintId } = useParams();
   const user = useSelector((state) => state.user);
+  const [isDeleted, setDeleted] = useState(false);
   const complaint = useSelector((state) => state.complaintPage);
   const { data, error, loading, deleting, deleted } = complaint;
 
@@ -36,7 +37,8 @@ const Complaint = () => {
 
   const removeComplaint = (complaintId) => {
     setDeleted(true);
-    dispatch(deleteComplaint({ user: user, complaintId: complaintId }));
+    const options = getOptions(user);
+    dispatch(deleteComplaint({ options: options, complaintId: complaintId }));
   };
 
   let id, address, picture, user_email, text, lat, lng;

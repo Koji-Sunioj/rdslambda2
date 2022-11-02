@@ -23,6 +23,11 @@ const complaintsSlice = createSlice({
         );
       }
     },
+    addCreated: (state, action) => {
+      if (Array.isArray(state.data) && state.data.length > 0) {
+        state.data.push(action.payload);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchComplaints.fulfilled, (state, action) => {
@@ -41,6 +46,6 @@ const complaintsSlice = createSlice({
   },
 });
 
-export const { purgeDeleted } = complaintsSlice.actions;
+export const { purgeDeleted, addCreated } = complaintsSlice.actions;
 
 export default complaintsSlice.reducer;

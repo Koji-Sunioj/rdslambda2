@@ -11,10 +11,11 @@ import { ComplaintsSkeleton } from "../complonents/ComplaintsSkeleton";
 const HomePage = () => {
   const dispatch = useDispatch();
   const complaints = useSelector((state) => state.complaintsPage);
-
   const { data, error, loading } = complaints;
   const [page, setPage] = useState(1);
   const [view, setView] = useState("list");
+
+  console.log(complaints);
 
   useEffect(() => {
     complaints === complaintsInit && dispatch(fetchComplaints());

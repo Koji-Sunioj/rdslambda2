@@ -7,16 +7,24 @@ import userReducer from "./reducers/userSlice";
 import complaintsReducer from "./reducers/complaintsHome";
 import complaintView from "./reducers/complaintView";
 
-import { purgeDeleted } from "./reducers/complaintsHome";
-import { resetComplaint } from "./reducers/complaintView";
+import { purgeDeleted, addCreated } from "./reducers/complaintsHome";
+import { resetComplaint, resetMutate } from "./reducers/complaintView";
 
 const isComplaintPurged = createListenerMiddleware();
+const isComplaintMutated = createListenerMiddleware();
 
 isComplaintPurged.startListening({
   matcher: isAnyOf(purgeDeleted),
   effect: (action, state) => {
     console.log("match");
     state.dispatch(resetComplaint());
+  },
+});
+
+isComplaintPurged.startListening({
+  matcher: isAnyOf(addCreated),
+  effect: (action, state) => {
+    state.dispatch(resetMutate());
   },
 });
 
@@ -28,5 +36,8 @@ export const store = configureStore({
   },
 
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(isComplaintPurged.middleware),
+    getDefaultMiddleware().prepend(
+      isComplaintPurged.middleware,
+      isComplaintMutated.middleware
+    ),
 });

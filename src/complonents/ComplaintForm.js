@@ -1,45 +1,61 @@
 import { API } from "aws-amplify";
 import addPicture from "../utils/to64";
+import { addCreated } from "../app/reducers/complaintsHome";
 import PointPicker from "./PointPicker";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { createComplaint } from "../app/reducers/complaintView";
 import { useState, useEffect } from "react";
 import { getOptions } from "../utils/options";
 import { useNavigate } from "react-router-dom";
-import { initialState } from "../app/reducers/userSlice";
+import { initialState as userState } from "../app/reducers/userSlice";
 
-const ComplantForm = ({ requestType, response = null, complaintId }) => {
+const ComplantForm = ({ requestType, complaintId }) => {
+  // const { complaintId } = useParams();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
-  const guestOrUser = user === initialState;
+  const complaintView = useSelector((state) => state.complaintPage);
+
+  const { data, created, creating } = complaintView;
+  console.log(data);
+  const guestOrUser = user === userState;
   const [file, setFile] = useState("");
   const [checked, setChecked] = useState(false);
   const [preview, setPreview] = useState(null);
 
+  //form values
   const [position, setPosition] = useState(null);
   const [location, setLocation] = useState(null);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState();
   const [timer, setTimer] = useState(null);
   const [dataList, setDataList] = useState([]);
-
   const [complaint, setComplaint] = useState("");
-  const hasPicture = response !== null && response.picture !== null;
+
+  const hasPicture = data !== null && data.picture !== null;
+  const shouldSetInput = data !== null && requestType === "edit";
   const options = getOptions(user);
 
   useEffect(() => {
-    response !== null && resetFromResp(response);
-  }, [response]);
+    shouldSetInput && resetFromResp(data);
+    created &&
+      (() => {
+        dispatch(addCreated(data));
+        alert("post created");
+        navigate("/");
+      })();
+  }, [created, shouldSetInput]);
 
-  const resetFromResp = (response) => {
-    setComplaint(response.complaint);
-    setPreview(response.picture);
-    setPosition({ lat: response.place.lat, lng: response.place.lng });
-    setSearch(response.place.address);
-    setLocation(response.place.address);
+  const resetFromResp = (data) => {
+    setComplaint(data.complaint);
+    setPreview(data.picture);
+    setPosition({ lat: data.place.lat, lng: data.place.lng });
+    setSearch(data.place.address);
+    setLocation(data.place.address);
     setDataList([
       {
-        place_name: response.place.address,
+        place_name: data.place.address,
         id: 1,
-        center: [response.place.lng, response.place.lat],
+        center: [data.place.lng, data.place.lat],
       },
     ]);
   };
@@ -69,13 +85,13 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
       });
     checked
       ? Object.assign(options.body, {
-          removePhoto: response.picture.match(getFile)[0],
+          removePhoto: data.picture.match(getFile)[0],
         })
       : picture.length > 0 &&
         Object.assign(options.body, await addPicture(picture[0]));
 
     try {
-      if (!("complaint" in options.body) && !("place" in options.body))
+      if (!("complaint" in options.body) || !("place" in options.body))
         throw new Error("complaint and location must be valid");
       let toBeAltered, path;
       switch (requestType) {
@@ -88,18 +104,19 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
           path = `/complaint/${complaintId}`;
           break;
         case "create":
-          toBeAltered = await API.post("rdslambda2", "/complaints/", options);
-          path = "/";
+          dispatch(createComplaint(options));
+          // toBeAltered = await API.post("rdslambda2", "/complaints/", options);
+          // path = "/";
           break;
         default:
           alert("missing action");
       }
-      const {
-        request: { status },
-        data: { message },
-      } = toBeAltered;
-      alert(message);
-      status === 200 && setTimeout(navigate(path), 500);
+      // const {
+      //   request: { status },
+      //   data: { message },
+      // } = toBeAltered;
+      //alert(message);
+      //status === 200 && setTimeout(navigate(path), 500);
     } catch (error) {
       alert(error);
     }
@@ -151,68 +168,70 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
       <form
         type="submit"
         encType="multipart/form-data"
-        className="login"
         onSubmit={(e) => {
           sendPost(e);
         }}
       >
-        <div>
-          <label htmlFor="complaint">complaint: </label>
-          <input
-            type="text"
-            name="complaint"
-            onChange={(e) => {
-              setComplaint(e.currentTarget.value);
-            }}
-            value={complaint}
-          />
-        </div>
-        <div>
-          <label htmlFor="location">location: </label>
-          <input
-            type="search"
-            name="location"
-            autoComplete="off"
-            value={search}
-            onChange={searchChange}
-            list="places"
-          />
-          <datalist id="places">
-            {dataList.map((place) => (
-              <option value={place.place_name} key={place.id} />
-            ))}
-          </datalist>
-        </div>
-        <PointPicker
-          location={location}
-          position={position}
-          setLocation={setLocation}
-          setPosition={setPosition}
-          setSearch={setSearch}
-          setDataList={setDataList}
-        />
-        {hasPicture && (
+        <fieldset className="login" disabled={creating}>
           <div>
-            <label htmlFor="removePhoto">no photo </label>
+            <label htmlFor="complaint">complaint: </label>
             <input
-              value={checked}
-              name="removePhoto"
-              type={"checkbox"}
-              onClick={(e) => {
-                const {
-                  currentTarget: { checked },
-                } = e;
-                setChecked(checked);
+              type="text"
+              name="complaint"
+              onChange={(e) => {
+                setComplaint(e.currentTarget.value);
               }}
+              value={complaint}
             />
           </div>
-        )}
-        <fieldset disabled={checked}>
+          <div>
+            <label htmlFor="location">location: </label>
+            <input
+              type="search"
+              name="location"
+              autoComplete="off"
+              value={search}
+              onChange={searchChange}
+              list="places"
+            />
+            <datalist id="places">
+              {dataList.map((place) => (
+                <option value={place.place_name} key={place.id} />
+              ))}
+            </datalist>
+          </div>
+          <PointPicker
+            location={location}
+            position={position}
+            setLocation={setLocation}
+            setPosition={setPosition}
+            setSearch={setSearch}
+            setDataList={setDataList}
+            disabled={creating}
+          />
+          {hasPicture && (
+            <div>
+              <label htmlFor="removePhoto">no photo </label>
+              <input
+                value={checked}
+                name="removePhoto"
+                type={"checkbox"}
+                onClick={(e) => {
+                  const {
+                    currentTarget: { checked },
+                  } = e;
+                  setChecked(checked);
+                }}
+              />
+            </div>
+          )}
+
           <div>
             <label htmlFor="picture">
               {hasPicture ? "replace photo" : "new photo"}
             </label>
             <input
+              disabled={checked}
               value={file}
               type="file"
               name="picture"
@@ -233,9 +252,7 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
                       return () => URL.revokeObjectURL(objectUrl);
                     })()
                   : (() => {
-                      hasPicture
-                        ? setPreview(response.picture)
-                        : setPreview(null);
+                      hasPicture ? setPreview(data.picture) : setPreview(null);
                     })();
               }}
             />
@@ -245,7 +262,7 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
             <figure>
               <img
                 src={
-                  hasPicture && preview === response.picture
+                  hasPicture && preview === data.picture
                     ? `${preview}?${Date.now()}`
                     : preview
                 }
@@ -258,14 +275,16 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
               </figcaption>
             </figure>
           )}
+
+          <button type="submit">Go</button>
         </fieldset>
-        <button type="submit">Go</button>
       </form>
       {!guestOrUser && (
         <button
+          disabled={creating}
           onClick={() => {
             setFile("");
-            response === null
+            data === null
               ? (() => {
                   setPosition(null);
                   setLocation(null);
@@ -273,7 +292,7 @@ const ComplantForm = ({ requestType, response = null, complaintId }) => {
                   setSearch("");
                   setPreview(null);
                 })()
-              : resetFromResp(response);
+              : resetFromResp(data);
           }}
         >
           Revert changes

@@ -8,12 +8,13 @@ export const initialState = {
   error: false,
   deleting: false,
   deleted: false,
+  creating: false,
+  created: false,
 };
 
 export const fetchComplaint = createAsyncThunk(
   "complaint/fetch",
   async (complaintId) => {
-    console.log("fetch fired");
     const response = await API.get("rdslambda2", `/complaints/${complaintId}`);
     return response;
   }
@@ -22,9 +23,18 @@ export const fetchComplaint = createAsyncThunk(
 export const deleteComplaint = createAsyncThunk(
   "complaint/delete",
   async (clientRequest) => {
-    const { user, complaintId } = clientRequest;
-    const options = getOptions(user);
+    const { options, complaintId } = clientRequest;
     await API.del("rdslambda2", `/complaints/${complaintId}`, options);
+  }
+);
+
+export const createComplaint = createAsyncThunk(
+  "complaint/create",
+  async (options) => {
+    console.log("post fired");
+    const response = await API.post("rdslambda2", "/complaints/", options);
+    delete response.data.message;
+    return response.data;
   }
 );
 
@@ -35,8 +45,12 @@ const complaintSlice = createSlice({
     resetComplaint: (state) => {
       Object.assign(state, initialState);
     },
+    resetMutate: (state) => {
+      Object.assign(state, { created: false, creating: false });
+    },
   },
   extraReducers: (builder) => {
+    //fetch one complaint
     builder.addCase(fetchComplaint.fulfilled, (state, action) => {
       return { ...state, loading: false, data: action.payload };
     });
@@ -46,7 +60,7 @@ const complaintSlice = createSlice({
     builder.addCase(fetchComplaint.pending, (state) => {
       return { ...state, loading: true, error: false, data: null };
     });
-
+    //delete complaint
     builder.addCase(deleteComplaint.fulfilled, (state) => {
       return { ...state, deleted: true, deleting: false };
     });
@@ -56,9 +70,19 @@ const complaintSlice = createSlice({
     builder.addCase(deleteComplaint.pending, (state) => {
       return { ...state, deleted: false, deleting: true };
     });
+    //create complaint
+    builder.addCase(createComplaint.fulfilled, (state, action) => {
+      return { ...state, creating: false, created: true, data: action.payload };
+    });
+    builder.addCase(createComplaint.rejected, (state) => {
+      return { ...state, creating: false, created: false };
+    });
+    builder.addCase(createComplaint.pending, (state) => {
+      return { ...state, creating: true, created: false };
+    });
   },
 });
 
-export const { resetComplaint } = complaintSlice.actions;
+export const { resetComplaint, resetMutate } = complaintSlice.actions;
 
 export default complaintSlice.reducer;
