@@ -1,15 +1,13 @@
 import { API } from "aws-amplify";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { getOptions } from "../../utils/options";
 
 export const initialState = {
   data: null,
   loading: false,
   error: false,
-  deleting: false,
-  deleted: false,
-  creating: false,
-  created: false,
+  mutating: false,
+  mutated: false,
+  mutateError: false,
 };
 
 export const fetchComplaint = createAsyncThunk(
@@ -31,8 +29,21 @@ export const deleteComplaint = createAsyncThunk(
 export const createComplaint = createAsyncThunk(
   "complaint/create",
   async (options) => {
-    console.log("post fired");
     const response = await API.post("rdslambda2", "/complaints/", options);
+    delete response.data.message;
+    return response.data;
+  }
+);
+
+export const editComplaint = createAsyncThunk(
+  "complaint/edit",
+  async (clientRequest) => {
+    const { options, complaintId } = clientRequest;
+    const response = await API.patch(
+      "rdslambda2",
+      `/complaints/${complaintId}`,
+      options
+    );
     delete response.data.message;
     return response.data;
   }
@@ -46,7 +57,7 @@ const complaintSlice = createSlice({
       Object.assign(state, initialState);
     },
     resetMutate: (state) => {
-      Object.assign(state, { created: false, creating: false });
+      Object.assign(state, { mutated: false, mutating: false });
     },
   },
   extraReducers: (builder) => {
@@ -62,23 +73,33 @@ const complaintSlice = createSlice({
     });
     //delete complaint
     builder.addCase(deleteComplaint.fulfilled, (state) => {
-      return { ...state, deleted: true, deleting: false };
+      return { ...state, mutated: true, mutating: false };
     });
     builder.addCase(deleteComplaint.rejected, (state) => {
-      return { ...state, deleted: false, deleting: false };
+      return { ...state, mutated: false, mutating: false, mutateError: true };
     });
     builder.addCase(deleteComplaint.pending, (state) => {
-      return { ...state, deleted: false, deleting: true };
+      return { ...state, mutated: false, mutating: true, mutateError: false };
     });
     //create complaint
     builder.addCase(createComplaint.fulfilled, (state, action) => {
-      return { ...state, creating: false, created: true, data: action.payload };
+      return { ...state, mutating: false, mutated: true, data: action.payload };
     });
     builder.addCase(createComplaint.rejected, (state) => {
-      return { ...state, creating: false, created: false };
+      return { ...state, mutating: false, mutated: false, mutateError: true };
     });
     builder.addCase(createComplaint.pending, (state) => {
-      return { ...state, creating: true, created: false };
+      return { ...state, mutating: true, mutated: false, mutateError: false };
+    });
+    //edit complaint
+    builder.addCase(editComplaint.fulfilled, (state, action) => {
+      return { ...state, mutating: false, mutated: true, data: action.payload };
+    });
+    builder.addCase(editComplaint.rejected, (state) => {
+      return { ...state, mutating: false, mutated: false, mutateError: true };
+    });
+    builder.addCase(editComplaint.pending, (state) => {
+      return { ...state, mutating: true, mutated: false, mutateError: false };
     });
   },
 });

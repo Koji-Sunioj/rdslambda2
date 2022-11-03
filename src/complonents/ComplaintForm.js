@@ -1,24 +1,26 @@
 import { API } from "aws-amplify";
 import addPicture from "../utils/to64";
-import { addCreated } from "../app/reducers/complaintsHome";
 import PointPicker from "./PointPicker";
-import { useSelector, useDispatch } from "react-redux";
-import { createComplaint } from "../app/reducers/complaintView";
 import { useState, useEffect } from "react";
 import { getOptions } from "../utils/options";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import { initialState as userState } from "../app/reducers/userSlice";
+import { addCreated, mutateEdited } from "../app/reducers/complaintsHome";
+import { createComplaint, editComplaint } from "../app/reducers/complaintView";
 
 const ComplantForm = ({ requestType, complaintId }) => {
-  // const { complaintId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state) => state.user);
-  const complaintView = useSelector((state) => state.complaintPage);
-
-  const { data, created, creating } = complaintView;
-  console.log(data);
+  const {
+    complaintPage: { data, mutating, mutated, mutateError, loading },
+    user,
+  } = useSelector((state) => state);
   const guestOrUser = user === userState;
+
+  const [mapping, setMapping] = useState(false);
+
+  //picture values
   const [file, setFile] = useState("");
   const [checked, setChecked] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -26,24 +28,27 @@ const ComplantForm = ({ requestType, complaintId }) => {
   //form values
   const [position, setPosition] = useState(null);
   const [location, setLocation] = useState(null);
-  const [search, setSearch] = useState();
+  const [search, setSearch] = useState("");
   const [timer, setTimer] = useState(null);
   const [dataList, setDataList] = useState([]);
   const [complaint, setComplaint] = useState("");
 
   const hasPicture = data !== null && data.picture !== null;
-  const shouldSetInput = data !== null && requestType === "edit";
+  const shouldSetInput = data !== null && requestType === "edit" && !mutated;
   const options = getOptions(user);
 
   useEffect(() => {
     shouldSetInput && resetFromResp(data);
-    created &&
+    mutated &&
       (() => {
-        dispatch(addCreated(data));
-        alert("post created");
-        navigate("/");
+        requestType === "edit"
+          ? dispatch(mutateEdited(data))
+          : dispatch(addCreated(data));
+        alert(`successful ${requestType}`);
+        navigate(`/complaint/${data.id}`);
       })();
-  }, [created, shouldSetInput]);
+    mutateError && alert(`failed ${requestType}`);
+  }, [mutated, mutateError, shouldSetInput]);
 
   const resetFromResp = (data) => {
     setComplaint(data.complaint);
@@ -93,30 +98,18 @@ const ComplantForm = ({ requestType, complaintId }) => {
     try {
       if (!("complaint" in options.body) || !("place" in options.body))
         throw new Error("complaint and location must be valid");
-      let toBeAltered, path;
       switch (requestType) {
         case "edit":
-          toBeAltered = await API.patch(
-            "rdslambda2",
-            `/complaints/${complaintId}`,
-            options
+          dispatch(
+            editComplaint({ options: options, complaintId: complaintId })
           );
-          path = `/complaint/${complaintId}`;
           break;
         case "create":
           dispatch(createComplaint(options));
-          // toBeAltered = await API.post("rdslambda2", "/complaints/", options);
-          // path = "/";
           break;
         default:
           alert("missing action");
       }
-      // const {
-      //   request: { status },
-      //   data: { message },
-      // } = toBeAltered;
-      //alert(message);
-      //status === 200 && setTimeout(navigate(path), 500);
     } catch (error) {
       alert(error);
     }
@@ -172,7 +165,7 @@ const ComplantForm = ({ requestType, complaintId }) => {
           sendPost(e);
         }}
       >
-        <fieldset className="login" disabled={creating}>
+        <fieldset className="login" disabled={mutating || loading || mapping}>
           <div>
             <label htmlFor="complaint">complaint: </label>
             <input
@@ -207,7 +200,8 @@ const ComplantForm = ({ requestType, complaintId }) => {
             setPosition={setPosition}
             setSearch={setSearch}
             setDataList={setDataList}
-            disabled={creating}
+            disabled={mutating || loading || mapping}
+            setMapping={setMapping}
           />
           {hasPicture && (
             <div>
@@ -281,7 +275,7 @@ const ComplantForm = ({ requestType, complaintId }) => {
       </form>
       {!guestOrUser && (
         <button
-          disabled={creating}
+          disabled={mutating || loading || mapping}
           onClick={() => {
             setFile("");
             data === null

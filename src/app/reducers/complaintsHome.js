@@ -6,7 +6,6 @@ export const initialState = { data: null, loading: false, error: false };
 export const fetchComplaints = createAsyncThunk(
   "complaints/fetch",
   async () => {
-    console.log("api hit");
     const response = await API.get("rdslambda2", "/complaints");
     return response;
   }
@@ -17,15 +16,23 @@ const complaintsSlice = createSlice({
   initialState,
   reducers: {
     purgeDeleted: (state, action) => {
-      if (Array.isArray(state.data) && state.data.length > 0) {
+      if (Array.isArray(state.data)) {
         state.data = state.data.filter(
           (complaint) => complaint.id !== Number(action.payload.id)
         );
       }
     },
     addCreated: (state, action) => {
-      if (Array.isArray(state.data) && state.data.length > 0) {
+      if (Array.isArray(state.data)) {
         state.data.push(action.payload);
+      }
+    },
+    mutateEdited: (state, action) => {
+      if (Array.isArray(state.data)) {
+        const ix = state.data.findIndex(
+          (item) => item.id === action.payload.id
+        );
+        state.data[ix] = action.payload;
       }
     },
   },
@@ -46,6 +53,7 @@ const complaintsSlice = createSlice({
   },
 });
 
-export const { purgeDeleted, addCreated } = complaintsSlice.actions;
+export const { purgeDeleted, addCreated, mutateEdited } =
+  complaintsSlice.actions;
 
 export default complaintsSlice.reducer;

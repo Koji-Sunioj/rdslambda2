@@ -7,8 +7,10 @@ import { setTheUser } from "../app/reducers/userSlice";
 const SignUp = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [signing, setSigning] = useState(false);
   const [signFlow, setSignFlow] = useState(null);
   const [pwd, setPwd] = useState(null);
+
   const sendUser = async (username, password) => {
     try {
       const { user } = await Auth.signUp({
@@ -26,6 +28,7 @@ const SignUp = () => {
   };
 
   const confirmSignUp = async (event) => {
+    setSigning(true);
     event.preventDefault();
     const {
       currentTarget: {
@@ -51,9 +54,11 @@ const SignUp = () => {
     } catch (error) {
       alert(error);
     }
+    setSigning(false);
   };
 
   const signUp = (event) => {
+    setSigning(true);
     event.preventDefault();
     const {
       currentTarget: {
@@ -72,13 +77,14 @@ const SignUp = () => {
     } else {
       sendUser(email, firstPwd);
     }
+    setSigning(false);
   };
 
   return (
     <>
       <h1>Sign up page</h1>
       {signFlow === null ? (
-        <>
+        <fieldset disabled={signing}>
           <form className="login" onSubmit={signUp}>
             <div>
               <label htmlFor="email">email:</label>
@@ -94,9 +100,9 @@ const SignUp = () => {
             </div>
             <button type="submit">Go</button>
           </form>
-        </>
+        </fieldset>
       ) : (
-        <>
+        <fieldset disabled={signing}>
           <form className="login" onSubmit={confirmSignUp}>
             <div>
               <label htmlFor="confirmation">sign up code:</label>
@@ -104,7 +110,7 @@ const SignUp = () => {
             </div>
             <button type="submit">Go</button>
           </form>
-        </>
+        </fieldset>
       )}
     </>
   );

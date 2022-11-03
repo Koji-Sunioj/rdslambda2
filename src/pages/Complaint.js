@@ -2,8 +2,8 @@ import Map from "../complonents/Map";
 import { Marker } from "react-leaflet";
 import { SVGOverlay } from "react-leaflet";
 import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import { getOptions } from "../utils/options";
+import { useSelector, useDispatch } from "react-redux";
 import { purgeDeleted } from "../app/reducers/complaintsHome";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ComplaintSkeleton } from "../complonents/ComplaintSkeleton";
@@ -17,7 +17,7 @@ const Complaint = () => {
   const user = useSelector((state) => state.user);
   const [isDeleted, setDeleted] = useState(false);
   const complaint = useSelector((state) => state.complaintPage);
-  const { data, error, loading, deleting, deleted } = complaint;
+  const { data, error, loading, mutating, mutated, mutateError } = complaint;
 
   const shouldFetch =
     (JSON.stringify(complaintInit) === JSON.stringify(complaint) &&
@@ -27,13 +27,14 @@ const Complaint = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     shouldFetch && dispatch(fetchComplaint(complaintId));
-    deleted &&
+    mutateError && alert("cannot delete");
+    mutated &&
       (() => {
         dispatch(purgeDeleted({ id: complaintId }));
         alert("item deleted");
         navigate("/");
       })();
-  }, [deleted, complaintId]);
+  }, [mutated, complaintId, mutateError]);
 
   const removeComplaint = (complaintId) => {
     setDeleted(true);
@@ -46,15 +47,6 @@ const Complaint = () => {
     [60.28, 25.1],
     [60.2, 24.55],
   ];
-
-  // function LocationMarker(position) {
-  //   const map = useMapEvents({});
-  //   map.flyTo(position, 10);
-
-  //   return <Marker position={position}></Marker>;
-  // }
-
-  //initPosition = { lat: 60.25, lng: 24.94 },
 
   return (
     <>
@@ -94,7 +86,6 @@ const Complaint = () => {
                 <>
                   <img
                     style={{ display: "block" }}
-                    key={Date.now()}
                     src={`${picture}?${Date.now()}`}
                     alt={text}
                   />
@@ -117,19 +108,19 @@ const Complaint = () => {
                 <div>
                   <br />
                   <button
-                    disabled={deleting}
+                    disabled={mutating}
                     onClick={() => {
                       removeComplaint(id);
                     }}
                   >
                     Delete
                   </button>
-                  <button disabled={deleting}>
+                  <button disabled={mutating}>
                     <Link
                       to={`/edit-complaint/${id}`}
                       style={{
                         textDecoration: "none",
-                        color: deleting ? "rgba(16, 16, 16, 0.3)" : "black",
+                        color: mutating ? "rgba(16, 16, 16, 0.3)" : "black",
                         cursor: "default",
                       }}
                     >
